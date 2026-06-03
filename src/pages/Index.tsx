@@ -403,8 +403,15 @@ export default function Index() {
                 </div>
                 <div>
                   <label className={labelCls}>Ваша скидка, %</label>
-                  <input type="number" min={0} max={99} value={discount}
-                    onChange={(e) => setDiscount(Number(e.target.value))} className={inputCls} />
+                  <div className="flex items-center border border-[#d0dde8] rounded-lg overflow-hidden bg-white">
+                    <button type="button" onClick={() => setDiscount(d => Math.max(0, d - 1))}
+                      className="px-3 py-2 text-lg font-bold text-gray-500 hover:bg-gray-100 active:bg-gray-200 transition-colors select-none">−</button>
+                    <input type="number" min={0} max={99} value={discount}
+                      onChange={(e) => setDiscount(Math.min(99, Math.max(0, Number(e.target.value) || 0)))}
+                      className="flex-1 text-center text-sm focus:outline-none bg-white py-2 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                    <button type="button" onClick={() => setDiscount(d => Math.min(99, d + 1))}
+                      className="px-3 py-2 text-lg font-bold text-gray-500 hover:bg-gray-100 active:bg-gray-200 transition-colors select-none">+</button>
+                  </div>
                 </div>
               </div>
 
