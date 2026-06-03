@@ -337,7 +337,7 @@ export default function Index() {
         </div>
 
         {/* блок: параметры */}
-        <div className="bg-white rounded-2xl border border-[#d0dde8] shadow-sm p-5">
+        <div id="params-block" className="bg-white rounded-2xl border border-[#d0dde8] shadow-sm p-5">
           <h2 className="text-center text-base font-bold text-[#1a6baa] mb-5">{selectedType.label} штора</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -480,7 +480,7 @@ export default function Index() {
 
           {/* кнопка */}
           <div className="mt-5 flex justify-center">
-            <button onClick={handleAdd}
+            <button onClick={() => { handleAdd(); document.getElementById("params-block")?.scrollIntoView({ behavior: "smooth" }); }}
               className="flex items-center gap-2 bg-[#1a6baa] hover:bg-[#155a92] text-white font-bold px-8 py-3 rounded-xl shadow-md transition-all hover:shadow-lg active:scale-95">
               <Icon name="Plus" size={18} />
               Добавить к расчёту
@@ -594,6 +594,18 @@ export default function Index() {
             </div>
           );
         })}
+
+        {/* кнопка добавить ещё */}
+        {items.length > 0 && (
+          <div className="flex justify-center">
+            <button
+              onClick={() => document.getElementById("params-block")?.scrollIntoView({ behavior: "smooth" })}
+              className="flex items-center gap-2 border-2 border-dashed border-[#1a6baa]/40 text-[#1a6baa] hover:border-[#1a6baa] hover:bg-blue-50 font-semibold px-6 py-3 rounded-xl transition-all">
+              <Icon name="PlusCircle" size={18} />
+              Добавить ещё одну штору
+            </button>
+          </div>
+        )}
 
         {/* итог + доставка */}
         {items.length > 0 && (
