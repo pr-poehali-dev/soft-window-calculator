@@ -140,6 +140,10 @@ export default function Index() {
   const [mountRight, setMountRight] = useState("--");
   const [deliveryKm, setDeliveryKm] = useState(0);
   const [items, setItems] = useState<Array<{ label: string; price: number }>>([]);
+  const [clientName, setClientName] = useState("");
+  const [clientPhone, setClientPhone] = useState("");
+  const [clientComment, setClientComment] = useState("");
+  const [submitted, setSubmitted] = useState(false);
 
   const selectedType = CURTAIN_TYPES.find((t) => t.id === curtainType)!;
   const films = FILM_OPTIONS[curtainType];
@@ -159,6 +163,11 @@ export default function Index() {
   const deliveryCost = deliveryKm > 0 ? PRICES.delivery_base + deliveryKm * PRICES.delivery_per_km : 0;
   const totalItems = items.reduce((s, i) => s + i.price, 0);
   const grandTotal = totalItems + deliveryCost;
+
+  function handleSubmit() {
+    if (!clientName.trim() || !clientPhone.trim()) return;
+    setSubmitted(true);
+  }
 
   function handleAdd() {
     const extras = [
@@ -430,6 +439,97 @@ export default function Index() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* форма заявки */}
+        {items.length > 0 && (
+          <div className="bg-white rounded-2xl border border-[#d0dde8] shadow-sm p-5">
+            {submitted ? (
+              <div className="flex flex-col items-center gap-3 py-6 text-center">
+                <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
+                  <Icon name="CheckCircle" size={32} className="text-green-500" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-800">Заявка отправлена!</h3>
+                <p className="text-sm text-gray-500 max-w-sm">
+                  Спасибо, <b>{clientName}</b>! Мы свяжемся с вами по номеру <b>{clientPhone}</b> и уточним детали заказа.
+                </p>
+                <button
+                  onClick={() => { setSubmitted(false); setItems([]); setClientName(""); setClientPhone(""); setClientComment(""); setDeliveryKm(0); }}
+                  className="mt-2 text-sm text-[#1a6baa] underline underline-offset-2 hover:text-[#155a92]"
+                >
+                  Создать новый расчёт
+                </button>
+              </div>
+            ) : (
+              <>
+                <h2 className="text-base font-bold text-gray-700 mb-1 flex items-center gap-2">
+                  <Icon name="Send" size={18} className="text-[#1a6baa]" />
+                  Отправить расчёт
+                </h2>
+                <p className="text-xs text-gray-400 mb-4">Оставьте контакты — мы свяжемся и подтвердим заказ</p>
+
+                <div className="space-y-3">
+                  {/* сводка */}
+                  <div className="bg-blue-50 border border-[#1a6baa]/15 rounded-xl px-4 py-3 text-sm text-gray-600 space-y-1">
+                    <div className="flex justify-between">
+                      <span>Позиций в расчёте:</span>
+                      <b className="text-gray-800">{items.length} шт.</b>
+                    </div>
+                    {deliveryCost > 0 && (
+                      <div className="flex justify-between">
+                        <span>Доставка:</span>
+                        <b className="text-gray-800">{deliveryCost.toLocaleString("ru-RU")} ₽</b>
+                      </div>
+                    )}
+                    <div className="flex justify-between border-t border-[#1a6baa]/10 pt-1 mt-1">
+                      <span className="font-semibold">Итого:</span>
+                      <b className="text-[#1a6baa] text-base">{grandTotal.toLocaleString("ru-RU")} ₽</b>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">Ваше имя *</label>
+                      <input
+                        type="text" placeholder="Иван Иванов" value={clientName}
+                        onChange={(e) => setClientName(e.target.value)}
+                        className="w-full border border-[#d0dde8] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a6baa]/30 bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">Телефон *</label>
+                      <input
+                        type="tel" placeholder="+7 (900) 000-00-00" value={clientPhone}
+                        onChange={(e) => setClientPhone(e.target.value)}
+                        className="w-full border border-[#d0dde8] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a6baa]/30 bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Комментарий</label>
+                    <textarea
+                      placeholder="Адрес объекта, удобное время звонка, пожелания..."
+                      value={clientComment}
+                      onChange={(e) => setClientComment(e.target.value)}
+                      rows={2}
+                      className="w-full border border-[#d0dde8] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a6baa]/30 bg-white resize-none"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleSubmit}
+                    disabled={!clientName.trim() || !clientPhone.trim()}
+                    className="w-full flex items-center justify-center gap-2 bg-[#1a6baa] hover:bg-[#155a92] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold px-8 py-3 rounded-xl shadow-md transition-all hover:shadow-lg active:scale-95"
+                  >
+                    <Icon name="Send" size={17} />
+                    Отправить расчёт
+                  </button>
+                  <p className="text-xs text-gray-400 text-center">Нажимая кнопку, вы соглашаетесь на обработку персональных данных</p>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
