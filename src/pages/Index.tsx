@@ -100,11 +100,13 @@ function WindowPreview({
   type, width, height,
   mountTop, mountBottom, mountLeft, mountRight,
   zipperLeft, zipperRight, strap,
+  frameColorHex,
 }: {
   type: CurtainType; width: number; height: number;
   mountTop: string; mountBottom: string; mountLeft: string; mountRight: string;
   zipperLeft: boolean; zipperRight: boolean;
   strap: boolean;
+  frameColorHex?: string;
 }) {
   const maxW = 240, maxH = 180;
   const ratio = Math.min(maxW / Math.max(width, 1), maxH / Math.max(height, 1), 1);
@@ -129,7 +131,7 @@ function WindowPreview({
           style={{
             width: type.noFrame ? pw : pw + 28,
             height: type.noFrame ? ph : ph + 28,
-            backgroundColor: type.frameColor,
+            backgroundColor: frameColorHex ?? type.frameColor,
           }}
         >
           {/* крепёж верх */}
@@ -334,18 +336,20 @@ export default function Index() {
               >
                 <div
                   className="w-full rounded flex items-center justify-center"
-                  style={{ height: 52, backgroundColor: t.frameColor }}
+                  style={{ height: 52, backgroundColor: t.noFrame ? t.filmColor : (FRAME_COLORS.find(c => c.id === frameColor)?.hex ?? t.frameColor) }}
                 >
-                  <div
-                    className="rounded-sm"
-                    style={{
-                      width: "65%", height: 34,
-                      backgroundColor: t.filmColor,
-                      backgroundImage: t.mesh
-                        ? "repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.2) 3px,rgba(0,0,0,.2) 4px),repeating-linear-gradient(90deg,transparent,transparent 3px,rgba(0,0,0,.2) 3px,rgba(0,0,0,.2) 4px)"
-                        : undefined,
-                    }}
-                  />
+                  {!t.noFrame && (
+                    <div
+                      className="rounded-sm"
+                      style={{
+                        width: "65%", height: 34,
+                        backgroundColor: t.filmColor,
+                        backgroundImage: t.mesh
+                          ? "repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.2) 3px,rgba(0,0,0,.2) 4px),repeating-linear-gradient(90deg,transparent,transparent 3px,rgba(0,0,0,.2) 3px,rgba(0,0,0,.2) 4px)"
+                          : undefined,
+                      }}
+                    />
+                  )}
                 </div>
                 <span className={`text-sm font-medium ${curtainType === t.id ? "text-[#1a6baa]" : "text-gray-600"}`}>
                   {t.label}
@@ -368,6 +372,7 @@ export default function Index() {
                 mountLeft={mountLeft} mountRight={mountRight}
                 zipperLeft={zipperLeft} zipperRight={zipperRight}
                 strap={strap}
+                frameColorHex={FRAME_COLORS.find(c => c.id === frameColor)?.hex}
               />
               <p className="text-xs text-gray-400 text-center max-w-xs leading-relaxed">
                 Введите ширину, высоту и параметры, нажмите «Добавить к расчёту».{" "}
@@ -521,13 +526,21 @@ export default function Index() {
 
           const MOUNT_PRICE = 120;
 
+          const perimeter = 2 * (item.width + item.height) / 1000;
+
           const rows: { label: string; detail: string; unitInfo: string; total: number }[] = [
             {
-              label: `Пленка (${fc?.label ?? ""} цвет)`,
+              label: "Пленка",
               detail: item.film.label,
               unitInfo: `${item.film.price} руб./м² * ${area.toFixed(2)} м²`,
               total: filmCost,
             },
+            ...(!item.curtainType.noFrame ? [{
+              label: "Окантовка ПВХ",
+              detail: fc?.label ?? "",
+              unitInfo: `${perimeter.toFixed(2)} п.м.`,
+              total: 0,
+            }] : []),
             ...mountSides.map(s => {
               const mo = MOUNT_OPTIONS.find(o => o.id === s.id);
               return {
@@ -570,6 +583,7 @@ export default function Index() {
                     mountLeft={item.mountLeft} mountRight={item.mountRight}
                     zipperLeft={item.zipperLeft} zipperRight={item.zipperRight}
                     strap={item.strap}
+                    frameColorHex={FRAME_COLORS.find(c => c.id === item.frameColor)?.hex}
                   />
                 </div>
 
@@ -586,7 +600,7 @@ export default function Index() {
                         <span className="text-gray-700">{row.detail}</span>
                         <div className="flex justify-between">
                           <span className="text-gray-400">{row.unitInfo}</span>
-                          <span className="font-semibold text-gray-800 whitespace-nowrap">{row.total.toLocaleString("ru-RU")} ₽</span>
+                          <span className="font-semibold text-gray-800 whitespace-nowrap">{row.total === 0 ? "вкл." : `${row.total.toLocaleString("ru-RU")} ₽`}</span>
                         </div>
                       </div>
                     ))}
