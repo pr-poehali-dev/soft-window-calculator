@@ -176,13 +176,24 @@ function WindowPreview({
                 ))}
               </div>
             )}
-            {/* ремешок подвязочный */}
+            {/* ремешки подвязочные — вертикальные полосы по плёнке */}
             {strap && (
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5">
-                <div className="w-8 h-1 bg-amber-700 rounded-full opacity-80" />
-                <div className="w-5 h-2.5 border-2 border-amber-700 rounded-sm opacity-80" />
-                <div className="w-1 h-2 bg-amber-700 rounded-b-full opacity-80" />
-              </div>
+              <>
+                {[0.28, 0.72].map((pos) => (
+                  <div
+                    key={pos}
+                    className="absolute top-0 bottom-0 flex flex-col items-center"
+                    style={{ left: `${pos * 100}%`, transform: "translateX(-50%)", width: 6 }}
+                  >
+                    {/* верхний крючок */}
+                    <div className="w-4 h-2 border-2 border-b-0 border-gray-500 rounded-t-full mt-0" />
+                    {/* вертикальный ремешок */}
+                    <div className="flex-1 w-1.5 bg-gray-400 rounded-full" style={{ minHeight: 4 }} />
+                    {/* нижний крючок */}
+                    <div className="w-4 h-2 border-2 border-t-0 border-gray-500 rounded-b-full mb-0" />
+                  </div>
+                ))}
+              </>
             )}
           </div>
         </div>
