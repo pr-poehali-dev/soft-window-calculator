@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import Icon from "@/components/ui/icon";
-import { loadPrices, loadFilmOptions, loadExtraLists } from "@/lib/prices";
+import { loadFilmOptions, loadExtraLists, loadWorks } from "@/lib/prices";
 
 // ─── данные ───────────────────────────────────────────────────
 type CurtainType = { id: string; label: string; filmColor: string; frameColor: string; mesh?: boolean; noFrame?: boolean };
@@ -193,7 +193,12 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
 
 // ─── главный компонент ─────────────────────────────────────────
 export default function Index() {
-  const PRICES = useMemo(() => loadPrices(), []);
+  const WORKS = useMemo(() => loadWorks(), []);
+  const wp = useMemo(() => {
+    const m: Record<string, number> = {};
+    WORKS.forEach(w => { m[w.id] = w.price; });
+    return m;
+  }, [WORKS]);
   const FILM_OPTIONS = useMemo(() => loadFilmOptions(), []);
   const EXTRA = useMemo(() => loadExtraLists(), []);
 
@@ -230,6 +235,9 @@ export default function Index() {
     unitPrice: number;
     mountPricePerUnit: number;
     framingPerM: number;
+    strapPrice: number;
+    zipperPrice: number;
+    mountingPrice: number;
     selectedHardware: Record<string, number>;
     selectedServices: Record<string, boolean>;
     selectedCustom: Record<string, number>;
@@ -247,15 +255,15 @@ export default function Index() {
   const unitPrice = useMemo(() => {
     const area = (width / 1000) * (height / 1000);
     let price = film.price * area;
-    if (strap) price += PRICES.strap;
-    if (zipperLeft) price += PRICES.zipper;
-    if (zipperRight) price += PRICES.zipper;
-    if (mounting) price += PRICES.mounting;
+    if (strap) price += wp.strap ?? 180;
+    if (zipperLeft) price += wp.zipper ?? 350;
+    if (zipperRight) price += wp.zipper ?? 350;
+    if (mounting) price += wp.mounting ?? 290;
     price = price * (1 - discount / 100);
     return Math.round(price);
-  }, [width, height, film, strap, zipperLeft, zipperRight, mounting, discount]);
+  }, [width, height, film, strap, zipperLeft, zipperRight, mounting, discount, wp]);
 
-  const deliveryCost = deliveryKm > 0 ? PRICES.delivery_base + deliveryKm * PRICES.delivery_per_km : 0;
+  const deliveryCost = deliveryKm > 0 ? (wp.delivery_base ?? 500) + deliveryKm * (wp.delivery_km ?? 35) : 0;
   const totalItems = items.reduce((s, i) => s + i.unitPrice * i.qty, 0);
   const grandTotal = totalItems + deliveryCost;
 
@@ -275,8 +283,11 @@ export default function Index() {
       discount,
       mountTop, mountBottom, mountLeft, mountRight,
       unitPrice,
-      mountPricePerUnit: PRICES.mount_per_unit,
-      framingPerM: PRICES.framing_per_m,
+      mountPricePerUnit: wp.mount_unit ?? 120,
+      framingPerM: wp.framing ?? 80,
+      strapPrice: wp.strap ?? 180,
+      zipperPrice: wp.zipper ?? 350,
+      mountingPrice: wp.mounting ?? 290,
       selectedHardware: { ...selectedHardware },
       selectedServices: { ...selectedServices },
       selectedCustom: { ...selectedCustom },
@@ -557,10 +568,10 @@ export default function Index() {
                 total: MOUNT_PRICE * s.countH,
               };
             }),
-            ...(item.strap ? [{ label: "Ремешок подвязочный", detail: "2 шт.", unitInfo: `${PRICES.strap} руб.`, total: PRICES.strap }] : []),
-            ...(item.zipperLeft ? [{ label: "Молния слева", detail: "Молния спиральная", unitInfo: `${PRICES.zipper} руб./шт. * 1 шт.`, total: PRICES.zipper }] : []),
-            ...(item.zipperRight ? [{ label: "Молния справа", detail: "Молния спиральная", unitInfo: `${PRICES.zipper} руб./шт. * 1 шт.`, total: PRICES.zipper }] : []),
-            ...(item.mounting ? [{ label: "Монтаж", detail: "Выезд и установка", unitInfo: `${PRICES.mounting} руб.`, total: PRICES.mounting }] : []),
+            ...(item.strap ? [{ label: "Ремешок подвязочный", detail: "2 шт.", unitInfo: `${item.strapPrice} руб.`, total: item.strapPrice }] : []),
+            ...(item.zipperLeft ? [{ label: "Молния слева", detail: "Молния спиральная", unitInfo: `${item.zipperPrice} руб./шт. * 1 шт.`, total: item.zipperPrice }] : []),
+            ...(item.zipperRight ? [{ label: "Молния справа", detail: "Молния спиральная", unitInfo: `${item.zipperPrice} руб./шт. * 1 шт.`, total: item.zipperPrice }] : []),
+            ...(item.mounting ? [{ label: "Монтаж", detail: "Выезд и установка", unitInfo: `${item.mountingPrice} руб.`, total: item.mountingPrice }] : []),
             ...EXTRA.hardware.filter(h => (item.selectedHardware[h.id] ?? 0) > 0).map(h => ({
               label: h.label, detail: "Фурнитура",
               unitInfo: `${h.price} ₽ × ${item.selectedHardware[h.id]} ${h.unit}`,
