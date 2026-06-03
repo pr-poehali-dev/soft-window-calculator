@@ -533,9 +533,10 @@ export default function Index() {
                 total: MOUNT_PRICE * s.countH,
               };
             }),
-            ...(item.strap ? [{ label: "Ремешок подвязочный", detail: "Ремешок", unitInfo: `${PRICES.strap} руб.`, total: PRICES.strap }] : []),
-            ...(item.zipperLeft ? [{ label: "Молния слева", detail: "Молния", unitInfo: `${PRICES.zipper} руб.`, total: PRICES.zipper }] : []),
-            ...(item.zipperRight ? [{ label: "Молния справа", detail: "Молния", unitInfo: `${PRICES.zipper} руб.`, total: PRICES.zipper }] : []),
+            ...(item.strap ? [{ label: "Ремешок подвязочный", detail: "2 шт.", unitInfo: `${PRICES.strap} руб.`, total: PRICES.strap }] : []),
+            ...(item.zipperLeft ? [{ label: "Молния слева", detail: "Молния спиральная", unitInfo: `${PRICES.zipper} руб./шт. * 1 шт.`, total: PRICES.zipper }] : []),
+            ...(item.zipperRight ? [{ label: "Молния справа", detail: "Молния спиральная", unitInfo: `${PRICES.zipper} руб./шт. * 1 шт.`, total: PRICES.zipper }] : []),
+            ...(item.mounting ? [{ label: "Монтаж", detail: "Выезд и установка", unitInfo: `${PRICES.mounting} руб.`, total: PRICES.mounting }] : []),
           ];
 
           const rowsTotal = rows.reduce((s, r) => s + r.total, 0);
