@@ -21,16 +21,22 @@ const FILM_OPTIONS: Record<string, { label: string; price: number; rollWidth: nu
     { label: "Производства Япония «Achilles», 500 мк.", price: 1900, rollWidth: 1.4, productWidth: 1.35 },
   ],
   combined: [
-    { label: "Пленка ПВХ комбо, 500 мк.", price: 640, rollWidth: 1.5, productWidth: 1.45 },
-    { label: "Пленка ПВХ комбо, 700 мк.", price: 780, rollWidth: 1.5, productWidth: 1.45 },
+    { label: "ПВХ прозрачная + тентовая, 500 мк.", price: 750, rollWidth: 1.5, productWidth: 1.45 },
+    { label: "ПВХ прозрачная + тентовая, 700 мк.", price: 950, rollWidth: 1.5, productWidth: 1.45 },
+    { label: "ПВХ прозрачная + Oxford, 500 мк.", price: 850, rollWidth: 1.5, productWidth: 1.45 },
+    { label: "ПВХ прозрачная + Oxford, 700 мк.", price: 1050, rollWidth: 1.5, productWidth: 1.45 },
   ],
   solid: [
-    { label: "Пленка однотонная тёмная", price: 380, rollWidth: 1.6, productWidth: 1.55 },
-    { label: "Пленка однотонная светлая", price: 360, rollWidth: 1.6, productWidth: 1.55 },
+    { label: "Тентовая ПВХ однотонная, 650 г/м²", price: 480, rollWidth: 1.6, productWidth: 1.55 },
+    { label: "Тентовая ПВХ однотонная, 900 г/м²", price: 620, rollWidth: 1.6, productWidth: 1.55 },
+    { label: "Oxford 600D водоотталкивающая", price: 390, rollWidth: 1.6, productWidth: 1.55 },
+    { label: "Oxford 900D усиленная", price: 520, rollWidth: 1.6, productWidth: 1.55 },
   ],
   mosquito: [
-    { label: "Сетка москитная стандарт", price: 290, rollWidth: 1.5, productWidth: 1.45 },
-    { label: "Сетка москитная мелкая", price: 320, rollWidth: 1.5, productWidth: 1.45 },
+    { label: "Сетка москитная стандарт, 1×1 мм", price: 280, rollWidth: 1.5, productWidth: 1.45 },
+    { label: "Сетка москитная мелкая, 0.6×0.6 мм", price: 340, rollWidth: 1.5, productWidth: 1.45 },
+    { label: "Сетка антимошка, 0.4×0.4 мм", price: 420, rollWidth: 1.5, productWidth: 1.45 },
+    { label: "Сетка усиленная нержавеющая", price: 680, rollWidth: 1.5, productWidth: 1.45 },
   ],
 };
 
