@@ -99,9 +99,11 @@ function MountRow({ count, mountId, direction }: { count: number; mountId: strin
 function WindowPreview({
   type, width, height,
   mountTop, mountBottom, mountLeft, mountRight,
+  zipperLeft, zipperRight,
 }: {
   type: CurtainType; width: number; height: number;
   mountTop: string; mountBottom: string; mountLeft: string; mountRight: string;
+  zipperLeft: boolean; zipperRight: boolean;
 }) {
   const maxW = 240, maxH = 180;
   const ratio = Math.min(maxW / Math.max(width, 1), maxH / Math.max(height, 1), 1);
@@ -143,7 +145,7 @@ function WindowPreview({
           </div>
           {/* пленка */}
           <div
-            className="rounded-sm"
+            className="relative rounded-sm overflow-hidden"
             style={{
               width: pw,
               height: ph,
@@ -152,7 +154,28 @@ function WindowPreview({
                 ? "repeating-linear-gradient(0deg,transparent,transparent 4px,rgba(0,0,0,.18) 4px,rgba(0,0,0,.18) 5px),repeating-linear-gradient(90deg,transparent,transparent 4px,rgba(0,0,0,.18) 4px,rgba(0,0,0,.18) 5px)"
                 : undefined,
             }}
-          />
+          >
+            {/* молния слева */}
+            {zipperLeft && (
+              <div className="absolute left-0 top-0 bottom-0 flex flex-col items-center" style={{ width: 6 }}>
+                <div className="w-1 h-full bg-gray-500 opacity-70 rounded-full" />
+                {Array.from({ length: Math.max(3, Math.round(ph / 10)) }).map((_, i) => (
+                  <div key={i} className="absolute w-2.5 h-px bg-gray-600 opacity-60"
+                    style={{ top: 4 + i * (ph / Math.max(3, Math.round(ph / 10))), left: 0 }} />
+                ))}
+              </div>
+            )}
+            {/* молния справа */}
+            {zipperRight && (
+              <div className="absolute right-0 top-0 bottom-0 flex flex-col items-center" style={{ width: 6 }}>
+                <div className="w-1 h-full bg-gray-500 opacity-70 rounded-full" />
+                {Array.from({ length: Math.max(3, Math.round(ph / 10)) }).map((_, i) => (
+                  <div key={i} className="absolute w-2.5 h-px bg-gray-600 opacity-60"
+                    style={{ top: 4 + i * (ph / Math.max(3, Math.round(ph / 10))), right: 0 }} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
         {/* стрелка ширины */}
         <div className="absolute bottom-0 flex flex-row items-center gap-0.5" style={{ width: pw + 28 }}>
@@ -305,6 +328,7 @@ export default function Index() {
                 type={selectedType} width={width} height={height}
                 mountTop={mountTop} mountBottom={mountBottom}
                 mountLeft={mountLeft} mountRight={mountRight}
+                zipperLeft={zipperLeft} zipperRight={zipperRight}
               />
               <p className="text-xs text-gray-400 text-center max-w-xs leading-relaxed">
                 Введите ширину, высоту и параметры, нажмите «Добавить к расчёту».{" "}
