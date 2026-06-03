@@ -60,6 +60,7 @@ const PRICES = {
   strap: 180,
   zipper: 350,
   mounting: 290,
+  framing_per_m: 80,
   delivery_base: 500,
   delivery_per_km: 35,
 };
@@ -538,8 +539,8 @@ export default function Index() {
             ...(!item.curtainType.noFrame ? [{
               label: "Окантовка ПВХ",
               detail: fc?.label ?? "",
-              unitInfo: `${perimeter.toFixed(2)} п.м.`,
-              total: 0,
+              unitInfo: `${PRICES.framing_per_m} руб./п.м. * ${perimeter.toFixed(2)} п.м.`,
+              total: Math.round(PRICES.framing_per_m * perimeter),
             }] : []),
             ...mountSides.map(s => {
               const mo = MOUNT_OPTIONS.find(o => o.id === s.id);
