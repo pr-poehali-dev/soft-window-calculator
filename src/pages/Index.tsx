@@ -99,11 +99,12 @@ function MountRow({ count, mountId, direction }: { count: number; mountId: strin
 function WindowPreview({
   type, width, height,
   mountTop, mountBottom, mountLeft, mountRight,
-  zipperLeft, zipperRight,
+  zipperLeft, zipperRight, strap,
 }: {
   type: CurtainType; width: number; height: number;
   mountTop: string; mountBottom: string; mountLeft: string; mountRight: string;
   zipperLeft: boolean; zipperRight: boolean;
+  strap: boolean;
 }) {
   const maxW = 240, maxH = 180;
   const ratio = Math.min(maxW / Math.max(width, 1), maxH / Math.max(height, 1), 1);
@@ -173,6 +174,14 @@ function WindowPreview({
                   <div key={i} className="absolute w-2.5 h-px bg-gray-600 opacity-60"
                     style={{ top: 4 + i * (ph / Math.max(3, Math.round(ph / 10))), right: 0 }} />
                 ))}
+              </div>
+            )}
+            {/* ремешок подвязочный */}
+            {strap && (
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5">
+                <div className="w-8 h-1 bg-amber-700 rounded-full opacity-80" />
+                <div className="w-5 h-2.5 border-2 border-amber-700 rounded-sm opacity-80" />
+                <div className="w-1 h-2 bg-amber-700 rounded-b-full opacity-80" />
               </div>
             )}
           </div>
@@ -329,6 +338,7 @@ export default function Index() {
                 mountTop={mountTop} mountBottom={mountBottom}
                 mountLeft={mountLeft} mountRight={mountRight}
                 zipperLeft={zipperLeft} zipperRight={zipperRight}
+                strap={strap}
               />
               <p className="text-xs text-gray-400 text-center max-w-xs leading-relaxed">
                 Введите ширину, высоту и параметры, нажмите «Добавить к расчёту».{" "}
