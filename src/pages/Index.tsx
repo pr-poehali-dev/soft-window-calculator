@@ -238,7 +238,19 @@ export default function Index() {
   const [mountLeft, setMountLeft] = useState("--");
   const [mountRight, setMountRight] = useState("--");
   const [deliveryKm, setDeliveryKm] = useState(0);
-  const [items, setItems] = useState<Array<{ label: string; price: number }>>([]);
+
+  type OrderItem = {
+    id: number;
+    curtainType: CurtainType;
+    width: number; height: number; qty: number;
+    film: { label: string; price: number; rollWidth: number; productWidth: number };
+    frameColor: string;
+    strap: boolean; zipperLeft: boolean; zipperRight: boolean; mounting: boolean;
+    discount: number;
+    mountTop: string; mountBottom: string; mountLeft: string; mountRight: string;
+    unitPrice: number;
+  };
+  const [items, setItems] = useState<OrderItem[]>([]);
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
   const [clientComment, setClientComment] = useState("");
@@ -260,7 +272,7 @@ export default function Index() {
   }, [width, height, film, strap, zipperLeft, zipperRight, mounting, discount]);
 
   const deliveryCost = deliveryKm > 0 ? PRICES.delivery_base + deliveryKm * PRICES.delivery_per_km : 0;
-  const totalItems = items.reduce((s, i) => s + i.price, 0);
+  const totalItems = items.reduce((s, i) => s + i.unitPrice * i.qty, 0);
   const grandTotal = totalItems + deliveryCost;
 
   function handleSubmit() {
@@ -269,15 +281,17 @@ export default function Index() {
   }
 
   function handleAdd() {
-    const extras = [
-      strap && "ремешок",
-      zipperLeft && "молния слева",
-      zipperRight && "молния справа",
-      mounting && "монтаж",
-    ].filter(Boolean).join(", ");
-    const label = `${selectedType.label} ${width}×${height} мм · ${film.label}${extras ? " · " + extras : ""} · ${qty} шт.`;
-    const price = unitPrice * qty;
-    setItems((prev) => [...prev, { label, price }]);
+    setItems((prev) => [...prev, {
+      id: Date.now(),
+      curtainType: selectedType,
+      width, height, qty,
+      film,
+      frameColor,
+      strap, zipperLeft, zipperRight, mounting,
+      discount,
+      mountTop, mountBottom, mountLeft, mountRight,
+      unitPrice,
+    }]);
   }
 
   const inputCls = "w-full border border-[#d0dde8] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a6baa]/30 bg-white";
@@ -489,67 +503,159 @@ export default function Index() {
         </div>
 
         {/* список позиций */}
-        {items.length > 0 && (
-          <div className="bg-white rounded-2xl border border-[#d0dde8] shadow-sm p-5">
-            <h2 className="text-base font-bold text-gray-700 mb-4 flex items-center gap-2">
-              <Icon name="ShoppingCart" size={18} className="text-[#1a6baa]" />
-              Позиции расчёта
-            </h2>
+        {items.map((item, idx) => {
+          const fc = FRAME_COLORS.find(c => c.id === item.frameColor);
+          const area = (item.width / 1000) * (item.height / 1000);
+          const filmCost = Math.round(item.film.price * area);
 
-            <div className="space-y-2 mb-4">
-              {items.map((item, i) => (
-                <div key={i} className="flex items-center justify-between gap-3 bg-gray-50 rounded-lg px-4 py-2.5">
-                  <span className="text-sm text-gray-700 flex-1 leading-snug">{item.label}</span>
-                  <span className="text-sm font-bold text-[#1a6baa] whitespace-nowrap">{item.price.toLocaleString("ru-RU")} ₽</span>
-                  <button onClick={() => setItems((prev) => prev.filter((_, idx) => idx !== i))}
-                    className="text-gray-300 hover:text-red-400 transition-colors">
-                    <Icon name="X" size={15} />
-                  </button>
+          const mountSides = [
+            { label: "Крепление сверху", id: item.mountTop, countH: Math.max(2, Math.min(6, Math.round(item.width / 200))) },
+            { label: "Крепление снизу", id: item.mountBottom, countH: Math.max(2, Math.min(6, Math.round(item.width / 200))) },
+            { label: "Крепление слева", id: item.mountLeft, countH: Math.max(2, Math.min(5, Math.round(item.height / 200))) },
+            { label: "Крепление справа", id: item.mountRight, countH: Math.max(2, Math.min(5, Math.round(item.height / 200))) },
+          ].filter(s => s.id !== "--");
+
+          const MOUNT_PRICE = 120;
+
+          const rows: { label: string; detail: string; unitInfo: string; total: number }[] = [
+            {
+              label: `Пленка (${fc?.label ?? ""} цвет)`,
+              detail: item.film.label,
+              unitInfo: `${item.film.price} руб./м² * ${area.toFixed(2)} м²`,
+              total: filmCost,
+            },
+            ...mountSides.map(s => {
+              const mo = MOUNT_OPTIONS.find(o => o.id === s.id);
+              return {
+                label: s.label,
+                detail: mo?.label ?? s.id,
+                unitInfo: `${MOUNT_PRICE} руб./шт. * ${s.countH} шт.`,
+                total: MOUNT_PRICE * s.countH,
+              };
+            }),
+            ...(item.strap ? [{ label: "Ремешок подвязочный", detail: "Ремешок", unitInfo: `${PRICES.strap} руб.`, total: PRICES.strap }] : []),
+            ...(item.zipperLeft ? [{ label: "Молния слева", detail: "Молния", unitInfo: `${PRICES.zipper} руб.`, total: PRICES.zipper }] : []),
+            ...(item.zipperRight ? [{ label: "Молния справа", detail: "Молния", unitInfo: `${PRICES.zipper} руб.`, total: PRICES.zipper }] : []),
+          ];
+
+          const rowsTotal = rows.reduce((s, r) => s + r.total, 0);
+          const discounted = Math.round(rowsTotal * (1 - item.discount / 100));
+
+          return (
+            <div key={item.id} className="bg-white rounded-2xl border border-[#d0dde8] shadow-sm p-5">
+              {/* заголовок позиции */}
+              <div className="flex items-start justify-between mb-4">
+                <h2 className="text-base font-bold text-gray-700 flex items-center gap-2">
+                  <Icon name="FileText" size={18} className="text-[#1a6baa]" />
+                  Позиция {idx + 1}
+                </h2>
+                <button onClick={() => setItems(prev => prev.filter(it => it.id !== item.id))}
+                  className="text-gray-300 hover:text-red-400 transition-colors p-1">
+                  <Icon name="X" size={16} />
+                </button>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-5">
+                {/* мини-превью */}
+                <div className="shrink-0 flex items-start justify-center">
+                  <WindowPreview
+                    type={item.curtainType}
+                    width={item.width} height={item.height}
+                    mountTop={item.mountTop} mountBottom={item.mountBottom}
+                    mountLeft={item.mountLeft} mountRight={item.mountRight}
+                    zipperLeft={item.zipperLeft} zipperRight={item.zipperRight}
+                    strap={item.strap}
+                  />
                 </div>
-              ))}
+
+                {/* детали */}
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-gray-800 text-sm mb-1">{item.curtainType.label}</p>
+                  <p className="text-xs text-gray-500 mb-3">Размер шторы (Ш×В): {item.width}×{item.height} мм</p>
+
+                  {/* таблица */}
+                  <div className="rounded-xl overflow-hidden border border-[#d0dde8] text-xs">
+                    {rows.map((row, ri) => (
+                      <div key={ri} className={`grid grid-cols-3 gap-2 px-3 py-2 ${ri % 2 === 0 ? "bg-gray-50" : "bg-white"}`}>
+                        <span className="text-gray-500">{row.label}</span>
+                        <span className="text-gray-700">{row.detail}</span>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">{row.unitInfo}</span>
+                          <span className="font-semibold text-gray-800 whitespace-nowrap">{row.total.toLocaleString("ru-RU")} ₽</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-gray-500">
+                    <span>Количество: <b className="text-gray-700">{item.qty} шт.</b></span>
+                    <span>Монтаж: <b className="text-gray-700">{item.mounting ? "Да" : "Нет"}</b></span>
+                    {item.discount > 0 && <span>Скидка: <b className="text-gray-700">{item.discount}%</b></span>}
+                    <span>Стоимость: <b className="text-[#1a6baa]">{(discounted * item.qty).toLocaleString("ru-RU")} ₽</b></span>
+                  </div>
+                </div>
+              </div>
             </div>
+          );
+        })}
 
+        {/* итог + доставка */}
+        {items.length > 0 && (
+          <div className="bg-white rounded-2xl border border-[#d0dde8] shadow-sm p-5 space-y-4">
             {/* доставка */}
-            <div className="border-t border-[#d0dde8] pt-4 space-y-3">
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <Icon name="Truck" size={15} className="text-gray-400" />
-                  <span className="text-sm font-semibold text-gray-600">Доставка:</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input type="number" min={0} value={deliveryKm}
-                    onChange={(e) => setDeliveryKm(Number(e.target.value))} placeholder="0"
-                    className="w-20 border border-[#d0dde8] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a6baa]/30" />
-                  <span className="text-sm text-gray-500">км от мастерской</span>
-                </div>
-                {deliveryKm > 0 && (
-                  <span className="text-sm font-bold text-[#1a6baa] ml-auto">{deliveryCost.toLocaleString("ru-RU")} ₽</span>
-                )}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Icon name="Truck" size={15} className="text-gray-400" />
+                <span className="text-sm font-semibold text-gray-600">Доставка:</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="number" min={0} value={deliveryKm}
+                  onChange={(e) => setDeliveryKm(Number(e.target.value))} placeholder="0"
+                  className="w-20 border border-[#d0dde8] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a6baa]/30" />
+                <span className="text-sm text-gray-500">км от мастерской</span>
               </div>
               {deliveryKm > 0 && (
-                <p className="text-xs text-gray-400 pl-1">
-                  База {PRICES.delivery_base} ₽ + {PRICES.delivery_per_km} ₽/км × {deliveryKm} км
-                </p>
+                <span className="text-sm font-bold text-[#1a6baa] ml-auto">{deliveryCost.toLocaleString("ru-RU")} ₽</span>
               )}
-
-              {/* итог */}
-              <div className="bg-gradient-to-r from-[#1a6baa] to-[#2585d0] rounded-xl px-5 py-4 flex items-center justify-between shadow-md">
-                <div>
-                  <p className="text-white/70 text-xs">Итого к оплате</p>
-                  <p className="text-white font-black text-2xl">{grandTotal.toLocaleString("ru-RU")} ₽</p>
-                </div>
-                <div className="text-right text-white/80 text-xs space-y-0.5">
-                  <p>Товары: {totalItems.toLocaleString("ru-RU")} ₽</p>
-                  {deliveryCost > 0 && <p>Доставка: {deliveryCost.toLocaleString("ru-RU")} ₽</p>}
-                </div>
-              </div>
             </div>
+
+            {/* общая сумма */}
+            <div className="text-center py-2">
+              <p className="text-sm text-gray-500">Монтаж: {items.some(i => i.mounting) ? "Да" : "Нет"}</p>
+              {items.some(i => i.discount > 0) && (
+                <p className="text-sm text-gray-500">Скидка применена</p>
+              )}
+              <p className="text-xl font-black text-gray-800 mt-1">
+                Общая стоимость заказа: <span className="text-[#1a6baa]">{grandTotal.toLocaleString("ru-RU")} ₽</span>
+              </p>
+            </div>
+
+            {/* кнопки */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => window.print()}
+                className="flex-1 flex items-center justify-center gap-2 border-2 border-[#1a6baa] text-[#1a6baa] hover:bg-blue-50 font-bold px-6 py-3 rounded-xl transition-all">
+                <Icon name="Printer" size={17} />
+                Распечатать
+              </button>
+              <button
+                onClick={() => document.getElementById("order-form")?.scrollIntoView({ behavior: "smooth" })}
+                className="flex-1 flex items-center justify-center gap-2 bg-[#1a6baa] hover:bg-[#155a92] text-white font-bold px-6 py-3 rounded-xl shadow-md transition-all">
+                <Icon name="ShoppingCart" size={17} />
+                Оформить заказ
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-400 text-center leading-relaxed">
+              С помощью онлайн-калькулятора можно рассчитать предварительную стоимость мягких окон.
+              Окончательная стоимость заказа составляется на основании замеров, после согласования всех видов материалов и работ.
+            </p>
           </div>
         )}
 
         {/* форма заявки */}
         {items.length > 0 && (
-          <div className="bg-white rounded-2xl border border-[#d0dde8] shadow-sm p-5">
+          <div id="order-form" className="bg-white rounded-2xl border border-[#d0dde8] shadow-sm p-5">
             {submitted ? (
               <div className="flex flex-col items-center gap-3 py-6 text-center">
                 <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
