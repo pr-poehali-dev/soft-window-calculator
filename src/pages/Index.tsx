@@ -2,12 +2,12 @@ import { useState, useMemo } from "react";
 import Icon from "@/components/ui/icon";
 
 // ─── данные ───────────────────────────────────────────────────
-type CurtainType = { id: string; label: string; filmColor: string; frameColor: string; mesh?: boolean };
+type CurtainType = { id: string; label: string; filmColor: string; frameColor: string; mesh?: boolean; noFrame?: boolean };
 
 const CURTAIN_TYPES: CurtainType[] = [
   { id: "transparent", label: "Прозрачная", filmColor: "#b8e4f0", frameColor: "#6b3a2a" },
   { id: "combined", label: "Комбинированная", filmColor: "#d4c4a0", frameColor: "#6b3a2a" },
-  { id: "solid", label: "Однотонная", filmColor: "#8b7355", frameColor: "#6b3a2a" },
+  { id: "solid", label: "Однотонная", filmColor: "#8b7355", frameColor: "#8b7355", noFrame: true },
   { id: "mosquito", label: "Москитная", filmColor: "#c8c8c8", frameColor: "#6b3a2a", mesh: true },
 ];
 
@@ -118,7 +118,7 @@ function WindowPreview({
     <div className="flex flex-col items-center gap-2">
       <div className="relative flex items-center justify-center" style={{ width: maxW + 80, height: maxH + 50 }}>
         {/* стрелка высоты */}
-        <div className="absolute right-0 flex flex-col items-center gap-0.5" style={{ height: ph + 28 }}>
+        <div className="absolute right-0 flex flex-col items-center gap-0.5" style={{ height: type.noFrame ? ph : ph + 28 }}>
           <div className="w-px flex-1 bg-[#1a6baa]" />
           <span className="text-[9px] text-[#1a6baa] font-semibold whitespace-nowrap">{height} мм</span>
           <div className="w-px flex-1 bg-[#1a6baa]" />
@@ -126,7 +126,11 @@ function WindowPreview({
         {/* рамка */}
         <div
           className="relative flex items-center justify-center rounded"
-          style={{ width: pw + 28, height: ph + 28, backgroundColor: type.frameColor }}
+          style={{
+            width: type.noFrame ? pw : pw + 28,
+            height: type.noFrame ? ph : ph + 28,
+            backgroundColor: type.frameColor,
+          }}
         >
           {/* крепёж верх */}
           <div className="absolute top-0 left-0 right-0 flex items-center justify-around px-2" style={{ height: 14 }}>
@@ -148,8 +152,8 @@ function WindowPreview({
           <div
             className="relative rounded-sm overflow-hidden"
             style={{
-              width: pw,
-              height: ph,
+              width: type.noFrame ? pw : pw,
+              height: type.noFrame ? ph : ph,
               backgroundColor: type.filmColor,
               backgroundImage: type.mesh
                 ? "repeating-linear-gradient(0deg,transparent,transparent 4px,rgba(0,0,0,.18) 4px,rgba(0,0,0,.18) 5px),repeating-linear-gradient(90deg,transparent,transparent 4px,rgba(0,0,0,.18) 4px,rgba(0,0,0,.18) 5px)"
@@ -198,7 +202,7 @@ function WindowPreview({
           </div>
         </div>
         {/* стрелка ширины */}
-        <div className="absolute bottom-0 flex flex-row items-center gap-0.5" style={{ width: pw + 28 }}>
+        <div className="absolute bottom-0 flex flex-row items-center gap-0.5" style={{ width: type.noFrame ? pw : pw + 28 }}>
           <div className="h-px flex-1 bg-[#1a6baa]" />
           <span className="text-[9px] text-[#1a6baa] font-semibold whitespace-nowrap">{width} мм</span>
           <div className="h-px flex-1 bg-[#1a6baa]" />
