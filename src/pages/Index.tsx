@@ -391,8 +391,15 @@ export default function Index() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelCls}>Кол-во штор, шт.</label>
-                  <input type="number" min={1} max={100} value={qty}
-                    onChange={(e) => setQty(Number(e.target.value))} className={inputCls} />
+                  <div className="flex items-center border border-[#d0dde8] rounded-lg overflow-hidden bg-white">
+                    <button type="button" onClick={() => setQty(q => Math.max(1, q - 1))}
+                      className="px-3 py-2 text-lg font-bold text-gray-500 hover:bg-gray-100 active:bg-gray-200 transition-colors select-none">−</button>
+                    <input type="number" min={1} max={100} value={qty}
+                      onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))}
+                      className="flex-1 text-center text-sm focus:outline-none bg-white py-2 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                    <button type="button" onClick={() => setQty(q => Math.min(100, q + 1))}
+                      className="px-3 py-2 text-lg font-bold text-gray-500 hover:bg-gray-100 active:bg-gray-200 transition-colors select-none">+</button>
+                  </div>
                 </div>
                 <div>
                   <label className={labelCls}>Ваша скидка, %</label>
