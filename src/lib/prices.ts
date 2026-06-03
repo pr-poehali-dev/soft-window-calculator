@@ -1,5 +1,32 @@
 // ─── дефолтные цены ───────────────────────────────────────────
-export type FilmOption = { label: string; price: number; rollWidth: number; productWidth: number };
+export type FilmOption = { id?: string; label: string; price: number; rollWidth: number; productWidth: number };
+
+// Работы и услуги (редактируемый список)
+export type WorkItem = { id: string; label: string; price: number; unit: string };
+
+export const DEFAULT_WORKS: WorkItem[] = [
+  { id: "strap",       label: "Ремешок подвязочный",      price: 180, unit: "шт." },
+  { id: "zipper",      label: "Молния",                   price: 350, unit: "шт." },
+  { id: "mounting",    label: "Монтаж (выезд)",           price: 290, unit: "выезд" },
+  { id: "framing",     label: "Окантовка ПВХ",            price: 80,  unit: "п.м." },
+  { id: "mount_unit",  label: "Крепление (скоба/люверс)", price: 120, unit: "шт." },
+  { id: "delivery_base", label: "Доставка: базовая ставка", price: 500, unit: "₽" },
+  { id: "delivery_km", label: "Доставка: за км",          price: 35,  unit: "км" },
+];
+
+const WORKS_KEY = "curtain_works";
+
+export function loadWorks(): WorkItem[] {
+  try {
+    const raw = localStorage.getItem(WORKS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) { console.warn(e); }
+  return JSON.parse(JSON.stringify(DEFAULT_WORKS));
+}
+
+export function saveWorks(w: WorkItem[]) {
+  localStorage.setItem(WORKS_KEY, JSON.stringify(w));
+}
 
 // Фурнитура: цена за штуку
 export type HardwareItem = { id: string; label: string; price: number; unit: string };
@@ -124,4 +151,5 @@ export function resetAll() {
   localStorage.removeItem(PRICES_KEY);
   localStorage.removeItem(FILMS_KEY);
   localStorage.removeItem(EXTRA_KEY);
+  localStorage.removeItem(WORKS_KEY);
 }

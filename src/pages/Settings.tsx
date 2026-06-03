@@ -3,10 +3,10 @@ import { Link } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import {
   loadPrices, savePrices, loadFilmOptions, saveFilmOptions,
-  loadExtraLists, saveExtraLists, resetAll,
-  DEFAULT_PRICES, DEFAULT_FILM_OPTIONS, DEFAULT_EXTRA_LISTS,
+  loadExtraLists, saveExtraLists, loadWorks, saveWorks, resetAll,
+  DEFAULT_PRICES, DEFAULT_FILM_OPTIONS, DEFAULT_EXTRA_LISTS, DEFAULT_WORKS,
   type PricesConfig, type FilmOptionsConfig, type ExtraLists,
-  type HardwareItem, type ServiceItem, type CustomItem,
+  type HardwareItem, type ServiceItem, type CustomItem, type WorkItem,
 } from "@/lib/prices";
 
 const CURTAIN_TYPE_LABELS: Record<string, string> = {
@@ -16,24 +16,14 @@ const CURTAIN_TYPE_LABELS: Record<string, string> = {
   mosquito: "Москитная",
 };
 
-const PRICES_LABELS: Record<keyof PricesConfig, string> = {
-  strap: "Ремешок подвязочный, руб./шт.",
-  zipper: "Молния, руб./шт.",
-  mounting: "Монтаж (выезд), руб.",
-  framing_per_m: "Окантовка ПВХ, руб./п.м.",
-  mount_per_unit: "Крепление (скоба/люверс), руб./шт.",
-  delivery_base: "Доставка: базовая ставка, руб.",
-  delivery_per_km: "Доставка: за км, руб.",
-};
-
-type Tab = "prices" | "films" | "hardware" | "services" | "custom";
+type Tab = "works" | "films" | "hardware" | "services" | "custom";
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
-  { id: "prices", label: "Работы", icon: "Wrench" },
-  { id: "films", label: "Плёнки", icon: "Layers" },
-  { id: "hardware", label: "Фурнитура", icon: "Package" },
-  { id: "services", label: "Услуги", icon: "Sparkles" },
-  { id: "custom", label: "Своё", icon: "LayoutList" },
+  { id: "works",    label: "Работы",    icon: "Wrench" },
+  { id: "films",    label: "Плёнки",   icon: "Layers" },
+  { id: "hardware", label: "Фурнитура",icon: "Package" },
+  { id: "services", label: "Услуги",   icon: "Sparkles" },
+  { id: "custom",   label: "Своё",     icon: "LayoutList" },
 ];
 
 function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
@@ -42,13 +32,15 @@ export default function Settings() {
   const [prices, setPrices] = useState<PricesConfig>(() => loadPrices());
   const [films, setFilms] = useState<FilmOptionsConfig>(() => loadFilmOptions());
   const [extra, setExtra] = useState<ExtraLists>(() => loadExtraLists());
+  const [works, setWorks] = useState<WorkItem[]>(() => loadWorks());
   const [saved, setSaved] = useState(false);
-  const [activeTab, setActiveTab] = useState<Tab>("prices");
+  const [activeTab, setActiveTab] = useState<Tab>("works");
 
   function handleSave() {
     savePrices(prices);
     saveFilmOptions(films);
     saveExtraLists(extra);
+    saveWorks(works);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   }
@@ -59,10 +51,37 @@ export default function Settings() {
     setPrices({ ...DEFAULT_PRICES });
     setFilms(JSON.parse(JSON.stringify(DEFAULT_FILM_OPTIONS)));
     setExtra(JSON.parse(JSON.stringify(DEFAULT_EXTRA_LISTS)));
+    setWorks(JSON.parse(JSON.stringify(DEFAULT_WORKS)));
   }
 
-  function updateFilmPrice(type: string, idx: number, price: number) {
-    setFilms(prev => ({ ...prev, [type]: prev[type].map((f, i) => i === idx ? { ...f, price } : f) }));
+  // ─── работы ───
+  function addWork() {
+    setWorks(prev => [...prev, { id: newId(), label: "", price: 0, unit: "шт." }]);
+  }
+  function updateWork(id: string, field: keyof WorkItem, val: string | number) {
+    setWorks(prev => prev.map(w => w.id === id ? { ...w, [field]: val } : w));
+  }
+  function removeWork(id: string) {
+    setWorks(prev => prev.filter(w => w.id !== id));
+  }
+
+  // ─── плёнки ───
+  function addFilm(type: string) {
+    setFilms(prev => ({
+      ...prev,
+      [type]: [...prev[type], { id: newId(), label: "", price: 0, rollWidth: 1.4, productWidth: 1.35 }],
+    }));
+  }
+  function updateFilm(type: string, idx: number, field: string, val: string | number) {
+    setFilms(prev => ({ ...prev, [type]: prev[type].map((f, i) => i === idx ? { ...f, [field]: val } : f) }));
+  }
+  function removeFilm(type: string, idx: number) {
+    setFilms(prev => ({ ...prev, [type]: prev[type].filter((_, i) => i !== idx) }));
+  }
+  function addFilmGroup() {
+    const name = prompt("Название новой группы плёнок:");
+    if (!name?.trim()) return;
+    setFilms(prev => ({ ...prev, [name.trim()]: [] }));
   }
 
   // ─── фурнитура ───
@@ -137,22 +156,32 @@ export default function Settings() {
         </div>
 
         {/* ── работы ── */}
-        {activeTab === "prices" && (
-          <div className="bg-white rounded-2xl border border-[#d0dde8] shadow-sm p-5">
-            <h2 className="text-sm font-bold text-gray-700 mb-4">Стоимость работ и услуг</h2>
-            <div className="space-y-3">
-              {(Object.keys(PRICES_LABELS) as (keyof PricesConfig)[]).map((key) => (
-                <div key={key} className="flex items-center justify-between gap-4">
-                  <label className="text-sm text-gray-600 flex-1">{PRICES_LABELS[key]}</label>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <input type="number" min={0} step={1} value={prices[key]}
-                      onChange={(e) => setPrices(prev => ({ ...prev, [key]: Number(e.target.value) }))}
-                      className={numInputCls} />
-                    <span className="text-xs text-gray-400 w-5">₽</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+        {activeTab === "works" && (
+          <div className="bg-white rounded-2xl border border-[#d0dde8] shadow-sm p-5 space-y-3">
+            <h2 className="text-sm font-bold text-gray-700">Работы и услуги</h2>
+            <p className="text-xs text-gray-400">Редактируй названия, цены и единицы измерения. Можно добавить свои строки.</p>
+            {works.map((w) => (
+              <div key={w.id} className="flex items-center gap-2">
+                <input value={w.label} placeholder="Название"
+                  onChange={(e) => updateWork(w.id, "label", e.target.value)}
+                  className={inputCls + " flex-1 min-w-0"} />
+                <input type="number" min={0} value={w.price}
+                  onChange={(e) => updateWork(w.id, "price", Number(e.target.value))}
+                  className={numInputCls} />
+                <input value={w.unit} placeholder="ед."
+                  onChange={(e) => updateWork(w.id, "unit", e.target.value)}
+                  className={inputCls + " w-16 shrink-0"} />
+                <span className="text-xs text-gray-400 shrink-0">₽</span>
+                <button onClick={() => removeWork(w.id)}
+                  className="text-gray-300 hover:text-red-400 transition-colors shrink-0">
+                  <Icon name="Trash2" size={16} />
+                </button>
+              </div>
+            ))}
+            <button onClick={addWork}
+              className="flex items-center gap-1.5 text-sm text-[#1a6baa] hover:text-[#155a92] font-semibold mt-1">
+              <Icon name="Plus" size={15} /> Добавить строку
+            </button>
           </div>
         )}
 
@@ -167,19 +196,31 @@ export default function Settings() {
                 </h2>
                 <div className="space-y-2.5">
                   {options.map((film, idx) => (
-                    <div key={idx} className="flex items-center gap-3">
-                      <span className="text-sm text-gray-600 flex-1 leading-snug">{film.label}</span>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <input type="number" min={0} step={10} value={film.price}
-                          onChange={(e) => updateFilmPrice(type, idx, Number(e.target.value))}
-                          className={numInputCls} />
-                        <span className="text-xs text-gray-400 whitespace-nowrap">₽/м²</span>
-                      </div>
+                    <div key={idx} className="flex items-center gap-2">
+                      <input value={film.label} placeholder="Название плёнки"
+                        onChange={(e) => updateFilm(type, idx, "label", e.target.value)}
+                        className={inputCls + " flex-1 min-w-0"} />
+                      <input type="number" min={0} step={10} value={film.price}
+                        onChange={(e) => updateFilm(type, idx, "price", Number(e.target.value))}
+                        className={numInputCls} />
+                      <span className="text-xs text-gray-400 whitespace-nowrap shrink-0">₽/м²</span>
+                      <button onClick={() => removeFilm(type, idx)}
+                        className="text-gray-300 hover:text-red-400 transition-colors shrink-0">
+                        <Icon name="Trash2" size={16} />
+                      </button>
                     </div>
                   ))}
                 </div>
+                <button onClick={() => addFilm(type)}
+                  className="flex items-center gap-1.5 text-sm text-[#1a6baa] hover:text-[#155a92] font-semibold mt-3">
+                  <Icon name="Plus" size={15} /> Добавить плёнку
+                </button>
               </div>
             ))}
+            <button onClick={addFilmGroup}
+              className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#1a6baa] font-semibold border border-dashed border-[#d0dde8] rounded-xl px-4 py-3 w-full justify-center hover:border-[#1a6baa] transition-colors">
+              <Icon name="FolderPlus" size={15} /> Добавить новую группу
+            </button>
           </div>
         )}
 
@@ -214,7 +255,7 @@ export default function Settings() {
         {activeTab === "services" && (
           <div className="bg-white rounded-2xl border border-[#d0dde8] shadow-sm p-5 space-y-3">
             <h2 className="text-sm font-bold text-gray-700">Дополнительные услуги</h2>
-            <p className="text-xs text-gray-400">Можно задать фиксированную сумму или процент от суммы позиций</p>
+            <p className="text-xs text-gray-400">Фиксированная сумма или процент от суммы позиций</p>
             {extra.services.map((s) => (
               <div key={s.id} className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                 <input value={s.label} placeholder="Название услуги"
