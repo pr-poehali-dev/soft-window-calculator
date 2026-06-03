@@ -506,77 +506,7 @@ export default function Index() {
             </div>
           </div>
 
-          {/* доп. позиции */}
-          {(EXTRA.hardware.length > 0 || EXTRA.services.length > 0 || EXTRA.custom.length > 0) && (
-            <div className="mt-6 pt-5 border-t border-[#d0dde8] space-y-4">
-              {EXTRA.hardware.length > 0 && (
-                <div>
-                  <p className="text-sm font-semibold text-gray-700 mb-2">Фурнитура</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {EXTRA.hardware.map(h => (
-                      <div key={h.id} className="flex items-center gap-2">
-                        <input type="checkbox" id={"hw-" + h.id}
-                          checked={(selectedHardware[h.id] ?? 0) > 0}
-                          onChange={(e) => setSelectedHardware(prev => ({ ...prev, [h.id]: e.target.checked ? 1 : 0 }))}
-                          className="w-4 h-4 accent-[#1a6baa] shrink-0" />
-                        <label htmlFor={"hw-" + h.id} className="text-sm text-gray-600 flex-1">{h.label} <span className="text-gray-400">— {h.price} ₽/{h.unit}</span></label>
-                        {(selectedHardware[h.id] ?? 0) > 0 && (
-                          <div className="flex items-center border border-[#d0dde8] rounded-lg overflow-hidden bg-white shrink-0">
-                            <button type="button" onClick={() => setSelectedHardware(prev => ({ ...prev, [h.id]: Math.max(1, (prev[h.id] ?? 1) - 1) }))}
-                              className="px-2 py-1 text-sm font-bold text-gray-500 hover:bg-gray-100">−</button>
-                            <span className="px-2 text-sm">{selectedHardware[h.id]}</span>
-                            <button type="button" onClick={() => setSelectedHardware(prev => ({ ...prev, [h.id]: (prev[h.id] ?? 1) + 1 }))}
-                              className="px-2 py-1 text-sm font-bold text-gray-500 hover:bg-gray-100">+</button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {EXTRA.services.length > 0 && (
-                <div>
-                  <p className="text-sm font-semibold text-gray-700 mb-2">Доп. услуги</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {EXTRA.services.map(s => (
-                      <label key={s.id} className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox"
-                          checked={selectedServices[s.id] ?? false}
-                          onChange={(e) => setSelectedServices(prev => ({ ...prev, [s.id]: e.target.checked }))}
-                          className="w-4 h-4 accent-[#1a6baa] shrink-0" />
-                        <span className="text-sm text-gray-600">{s.label} <span className="text-gray-400">— {s.price}{s.isPercent ? "%" : " ₽"}</span></span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {EXTRA.custom.length > 0 && (
-                <div>
-                  <p className="text-sm font-semibold text-gray-700 mb-2">Дополнительно</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {EXTRA.custom.map(c => (
-                      <div key={c.id} className="flex items-center gap-2">
-                        <input type="checkbox" id={"cx-" + c.id}
-                          checked={(selectedCustom[c.id] ?? 0) > 0}
-                          onChange={(e) => setSelectedCustom(prev => ({ ...prev, [c.id]: e.target.checked ? 1 : 0 }))}
-                          className="w-4 h-4 accent-[#1a6baa] shrink-0" />
-                        <label htmlFor={"cx-" + c.id} className="text-sm text-gray-600 flex-1">{c.label} <span className="text-gray-400">— {c.price} ₽/{c.unit}</span></label>
-                        {(selectedCustom[c.id] ?? 0) > 0 && (
-                          <div className="flex items-center border border-[#d0dde8] rounded-lg overflow-hidden bg-white shrink-0">
-                            <button type="button" onClick={() => setSelectedCustom(prev => ({ ...prev, [c.id]: Math.max(1, (prev[c.id] ?? 1) - 1) }))}
-                              className="px-2 py-1 text-sm font-bold text-gray-500 hover:bg-gray-100">−</button>
-                            <span className="px-2 text-sm">{selectedCustom[c.id]}</span>
-                            <button type="button" onClick={() => setSelectedCustom(prev => ({ ...prev, [c.id]: (prev[c.id] ?? 1) + 1 }))}
-                              className="px-2 py-1 text-sm font-bold text-gray-500 hover:bg-gray-100">+</button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+
 
           {/* кнопка */}
           <div className="mt-5 flex justify-center">
