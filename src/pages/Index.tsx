@@ -64,12 +64,52 @@ const PRICES = {
   delivery_per_km: 35,
 };
 
+// ─── крепёж на рамке ──────────────────────────────────────────
+function Fastener({ mountId }: { mountId: string }) {
+  if (mountId === "--") return null;
+  const isLyuvers = mountId === "round_lyuvers";
+  const isSkoba = mountId === "skoba_lyuvers" || mountId === "skoba_large" || mountId === "skoba_small";
+  if (!isLyuvers && !isSkoba) return null;
+
+  if (isLyuvers) {
+    return (
+      <div className="w-4 h-4 rounded-full border-2 border-gray-300 bg-white shadow-sm flex items-center justify-center">
+        <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+      </div>
+    );
+  }
+  return (
+    <div className="w-4 h-4 flex flex-col items-center gap-0.5">
+      <div className="w-3 h-1.5 rounded-sm bg-gray-200 border border-gray-400 shadow-sm" />
+      <div className="w-1.5 h-1.5 rounded-full bg-gray-300 border border-gray-500" />
+    </div>
+  );
+}
+
+function MountRow({ count, mountId, direction }: { count: number; mountId: string; direction: "h" | "v" }) {
+  if (mountId === "--") return null;
+  return (
+    <div className={`flex ${direction === "h" ? "flex-row" : "flex-col"} items-center justify-around w-full h-full`}>
+      {Array.from({ length: count }).map((_, i) => <Fastener key={i} mountId={mountId} />)}
+    </div>
+  );
+}
+
 // ─── компонент превью окна ─────────────────────────────────────
-function WindowPreview({ type, width, height }: { type: typeof CURTAIN_TYPES[0]; width: number; height: number }) {
+function WindowPreview({
+  type, width, height,
+  mountTop, mountBottom, mountLeft, mountRight,
+}: {
+  type: CurtainType; width: number; height: number;
+  mountTop: string; mountBottom: string; mountLeft: string; mountRight: string;
+}) {
   const maxW = 240, maxH = 180;
   const ratio = Math.min(maxW / Math.max(width, 1), maxH / Math.max(height, 1), 1);
   const pw = Math.round(width * ratio);
   const ph = Math.round(height * ratio);
+
+  const countH = Math.max(2, Math.min(6, Math.round(pw / 40)));
+  const countV = Math.max(2, Math.min(5, Math.round(ph / 40)));
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -85,6 +125,22 @@ function WindowPreview({ type, width, height }: { type: typeof CURTAIN_TYPES[0];
           className="relative flex items-center justify-center rounded"
           style={{ width: pw + 28, height: ph + 28, backgroundColor: type.frameColor }}
         >
+          {/* крепёж верх */}
+          <div className="absolute top-0 left-0 right-0 flex items-center justify-around px-2" style={{ height: 14 }}>
+            <MountRow count={countH} mountId={mountTop} direction="h" />
+          </div>
+          {/* крепёж низ */}
+          <div className="absolute bottom-0 left-0 right-0 flex items-center justify-around px-2" style={{ height: 14 }}>
+            <MountRow count={countH} mountId={mountBottom} direction="h" />
+          </div>
+          {/* крепёж слева */}
+          <div className="absolute top-0 bottom-0 left-0 flex flex-col items-center justify-around py-2" style={{ width: 14 }}>
+            <MountRow count={countV} mountId={mountLeft} direction="v" />
+          </div>
+          {/* крепёж справа */}
+          <div className="absolute top-0 bottom-0 right-0 flex flex-col items-center justify-around py-2" style={{ width: 14 }}>
+            <MountRow count={countV} mountId={mountRight} direction="v" />
+          </div>
           {/* пленка */}
           <div
             className="rounded-sm"
@@ -245,7 +301,11 @@ export default function Index() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* превью */}
             <div className="flex flex-col items-center justify-start gap-4 pt-2">
-              <WindowPreview type={selectedType} width={width} height={height} />
+              <WindowPreview
+                type={selectedType} width={width} height={height}
+                mountTop={mountTop} mountBottom={mountBottom}
+                mountLeft={mountLeft} mountRight={mountRight}
+              />
               <p className="text-xs text-gray-400 text-center max-w-xs leading-relaxed">
                 Введите ширину, высоту и параметры, нажмите «Добавить к расчёту».{" "}
                 <b className="text-gray-500">ВАЖНО:</b> добавляйте 70 мм с каждой стороны к световому проёму.
