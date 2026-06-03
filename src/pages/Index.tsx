@@ -13,9 +13,12 @@ const CURTAIN_TYPES: CurtainType[] = [
 
 const FILM_OPTIONS: Record<string, { label: string; price: number; rollWidth: number; productWidth: number }[]> = {
   transparent: [
-    { label: "Пленка ПВХ прозрачная, 300 мк.", price: 420, rollWidth: 1.4, productWidth: 1.35 },
-    { label: "Пленка ПВХ прозрачная, 500 мк.", price: 580, rollWidth: 1.4, productWidth: 1.35 },
-    { label: "Пленка ПВХ прозрачная, 700 мк.", price: 720, rollWidth: 1.4, productWidth: 1.35 },
+    { label: "Пленка ПВХ прозрачная, 500 мк.", price: 600, rollWidth: 1.4, productWidth: 1.35 },
+    { label: "Пленка ПВХ прозрачная, 700 мк.", price: 800, rollWidth: 1.4, productWidth: 1.35 },
+    { label: "Пленка ПВХ прозрачная, 1000 мк.", price: 950, rollWidth: 1.4, productWidth: 1.35 },
+    { label: "Пленка полиуретановая, 500 мк.", price: 1500, rollWidth: 1.5, productWidth: 1.45 },
+    { label: "Пленка полиуретановая, 700 мк.", price: 1700, rollWidth: 1.5, productWidth: 1.45 },
+    { label: "Производства Япония «Achilles», 500 мк.", price: 1900, rollWidth: 1.4, productWidth: 1.35 },
   ],
   combined: [
     { label: "Пленка ПВХ комбо, 500 мк.", price: 640, rollWidth: 1.5, productWidth: 1.45 },
@@ -254,10 +257,13 @@ export default function Index() {
               <div>
                 <label className={labelCls}>Выбор пленки</label>
                 <select value={filmIdx} onChange={(e) => setFilmIdx(Number(e.target.value))} className={inputCls}>
-                  {films.map((f, i) => <option key={i} value={i}>{f.label}</option>)}
+                  {films.map((f, i) => (
+                    <option key={i} value={i}>{f.label} — {f.price} руб./м²</option>
+                  ))}
                 </select>
                 <p className="text-xs text-gray-400 mt-1">
                   Ширина рулона: <b>{film.rollWidth}</b> &nbsp;·&nbsp; В изделии: <b>{film.productWidth}</b>
+                  &nbsp;·&nbsp; Цена: <b className="text-[#1a6baa]">{film.price} руб./м²</b>
                 </p>
               </div>
 
