@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import Icon from "@/components/ui/icon";
+import { loadPrices, loadFilmOptions } from "@/lib/prices";
 
 // ─── данные ───────────────────────────────────────────────────
 type CurtainType = { id: string; label: string; filmColor: string; frameColor: string; mesh?: boolean; noFrame?: boolean };
@@ -10,35 +12,6 @@ const CURTAIN_TYPES: CurtainType[] = [
   { id: "solid", label: "Однотонная", filmColor: "#8b7355", frameColor: "#8b7355", noFrame: true },
   { id: "mosquito", label: "Москитная", filmColor: "#c8c8c8", frameColor: "#6b3a2a", mesh: true },
 ];
-
-const FILM_OPTIONS: Record<string, { label: string; price: number; rollWidth: number; productWidth: number }[]> = {
-  transparent: [
-    { label: "Пленка ПВХ прозрачная, 500 мк.", price: 600, rollWidth: 1.4, productWidth: 1.35 },
-    { label: "Пленка ПВХ прозрачная, 700 мк.", price: 800, rollWidth: 1.4, productWidth: 1.35 },
-    { label: "Пленка ПВХ прозрачная, 1000 мк.", price: 950, rollWidth: 1.4, productWidth: 1.35 },
-    { label: "Пленка полиуретановая, 500 мк.", price: 1500, rollWidth: 1.5, productWidth: 1.45 },
-    { label: "Пленка полиуретановая, 700 мк.", price: 1700, rollWidth: 1.5, productWidth: 1.45 },
-    { label: "Производства Япония «Achilles», 500 мк.", price: 1900, rollWidth: 1.4, productWidth: 1.35 },
-  ],
-  combined: [
-    { label: "ПВХ прозрачная + тентовая, 500 мк.", price: 750, rollWidth: 1.5, productWidth: 1.45 },
-    { label: "ПВХ прозрачная + тентовая, 700 мк.", price: 950, rollWidth: 1.5, productWidth: 1.45 },
-    { label: "ПВХ прозрачная + Oxford, 500 мк.", price: 850, rollWidth: 1.5, productWidth: 1.45 },
-    { label: "ПВХ прозрачная + Oxford, 700 мк.", price: 1050, rollWidth: 1.5, productWidth: 1.45 },
-  ],
-  solid: [
-    { label: "Тентовая ПВХ однотонная, 650 г/м²", price: 480, rollWidth: 1.6, productWidth: 1.55 },
-    { label: "Тентовая ПВХ однотонная, 900 г/м²", price: 620, rollWidth: 1.6, productWidth: 1.55 },
-    { label: "Oxford 600D водоотталкивающая", price: 390, rollWidth: 1.6, productWidth: 1.55 },
-    { label: "Oxford 900D усиленная", price: 520, rollWidth: 1.6, productWidth: 1.55 },
-  ],
-  mosquito: [
-    { label: "Сетка москитная стандарт, 1×1 мм", price: 280, rollWidth: 1.5, productWidth: 1.45 },
-    { label: "Сетка москитная мелкая, 0.6×0.6 мм", price: 340, rollWidth: 1.5, productWidth: 1.45 },
-    { label: "Сетка антимошка, 0.4×0.4 мм", price: 420, rollWidth: 1.5, productWidth: 1.45 },
-    { label: "Сетка усиленная нержавеющая", price: 680, rollWidth: 1.5, productWidth: 1.45 },
-  ],
-};
 
 const FRAME_COLORS = [
   { id: "brown", label: "Коричневый", hex: "#6b3a2a" },
@@ -55,15 +28,6 @@ const MOUNT_OPTIONS = [
   { id: "skoba_large", label: "Скоба большая поворотная" },
   { id: "skoba_small", label: "Скоба малая поворотная" },
 ];
-
-const PRICES = {
-  strap: 180,
-  zipper: 350,
-  mounting: 290,
-  framing_per_m: 80,
-  delivery_base: 500,
-  delivery_per_km: 35,
-};
 
 // ─── крепёж на рамке ──────────────────────────────────────────
 function Fastener({ mountId }: { mountId: string }) {
@@ -229,6 +193,9 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
 
 // ─── главный компонент ─────────────────────────────────────────
 export default function Index() {
+  const PRICES = useMemo(() => loadPrices(), []);
+  const FILM_OPTIONS = useMemo(() => loadFilmOptions(), []);
+
   const [curtainType, setCurtainType] = useState("transparent");
   const [filmIdx, setFilmIdx] = useState(0);
   const [frameColor, setFrameColor] = useState("brown");
@@ -256,6 +223,8 @@ export default function Index() {
     discount: number;
     mountTop: string; mountBottom: string; mountLeft: string; mountRight: string;
     unitPrice: number;
+    mountPricePerUnit: number;
+    framingPerM: number;
   };
   const [items, setItems] = useState<OrderItem[]>([]);
   const [clientName, setClientName] = useState("");
@@ -298,6 +267,8 @@ export default function Index() {
       discount,
       mountTop, mountBottom, mountLeft, mountRight,
       unitPrice,
+      mountPricePerUnit: PRICES.mount_per_unit,
+      framingPerM: PRICES.framing_per_m,
     }]);
   }
 
@@ -312,10 +283,15 @@ export default function Index() {
           <div className="w-9 h-9 rounded-xl bg-[#1a6baa] flex items-center justify-center shadow">
             <Icon name="Wind" size={20} className="text-white" />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-lg font-bold text-gray-800 leading-tight">Калькулятор мягких окон</h1>
             <p className="text-xs text-gray-400">Точный расчёт стоимости ПВХ-штор</p>
           </div>
+          <Link to="/settings"
+            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#1a6baa] transition-colors px-3 py-2 rounded-lg hover:bg-blue-50">
+            <Icon name="Settings" size={16} />
+            <span className="hidden sm:inline">Настройки</span>
+          </Link>
         </div>
       </div>
 
@@ -525,7 +501,7 @@ export default function Index() {
             { label: "Крепление справа", id: item.mountRight, countH: Math.max(2, Math.min(5, Math.round(item.height / 200))) },
           ].filter(s => s.id !== "--");
 
-          const MOUNT_PRICE = 120;
+          const MOUNT_PRICE = item.mountPricePerUnit;
 
           const perimeter = 2 * (item.width + item.height) / 1000;
 
@@ -539,8 +515,8 @@ export default function Index() {
             ...(!item.curtainType.noFrame ? [{
               label: "Окантовка ПВХ",
               detail: fc?.label ?? "",
-              unitInfo: `${PRICES.framing_per_m} руб./п.м. * ${perimeter.toFixed(2)} п.м.`,
-              total: Math.round(PRICES.framing_per_m * perimeter),
+              unitInfo: `${item.framingPerM} руб./п.м. * ${perimeter.toFixed(2)} п.м.`,
+              total: Math.round(item.framingPerM * perimeter),
             }] : []),
             ...mountSides.map(s => {
               const mo = MOUNT_OPTIONS.find(o => o.id === s.id);
