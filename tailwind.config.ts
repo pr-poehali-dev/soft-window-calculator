@@ -7,6 +7,7 @@ export default {
 		"./components/**/*.{ts,tsx}",
 		"./app/**/*.{ts,tsx}",
 		"./src/**/*.{ts,tsx}",
+			"./1780504950367945620.html"
 	],
 	prefix: "",
 	theme: {
@@ -17,8 +18,16 @@ export default {
 				'2xl': '1400px'
 			}
 		},
+		fontFamily: {
+			golos: ['Golos Text', 'sans-serif'],
+		},
 		extend: {
 			colors: {
+				'win-blue': '#1a6baa',
+				'win-brown': '#6b3a2a',
+				'win-sky': '#b8e4f0',
+				'win-light': '#f4f8fb',
+				'win-border': '#d0dde8',
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
