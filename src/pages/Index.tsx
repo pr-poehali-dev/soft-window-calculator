@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import Icon from "@/components/ui/icon";
-import { loadPrices, loadFilmOptions } from "@/lib/prices";
+import { loadPrices, loadFilmOptions, loadExtraLists } from "@/lib/prices";
 
 // ─── данные ───────────────────────────────────────────────────
 type CurtainType = { id: string; label: string; filmColor: string; frameColor: string; mesh?: boolean; noFrame?: boolean };
@@ -195,6 +195,7 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
 export default function Index() {
   const PRICES = useMemo(() => loadPrices(), []);
   const FILM_OPTIONS = useMemo(() => loadFilmOptions(), []);
+  const EXTRA = useMemo(() => loadExtraLists(), []);
 
   const [curtainType, setCurtainType] = useState("transparent");
   const [filmIdx, setFilmIdx] = useState(0);
@@ -212,6 +213,10 @@ export default function Index() {
   const [mountLeft, setMountLeft] = useState("--");
   const [mountRight, setMountRight] = useState("--");
   const [deliveryKm, setDeliveryKm] = useState(0);
+  // выбранные доп. позиции (id → кол-во)
+  const [selectedHardware, setSelectedHardware] = useState<Record<string, number>>({});
+  const [selectedServices, setSelectedServices] = useState<Record<string, boolean>>({});
+  const [selectedCustom, setSelectedCustom] = useState<Record<string, number>>({});
 
   type OrderItem = {
     id: number;
@@ -225,6 +230,9 @@ export default function Index() {
     unitPrice: number;
     mountPricePerUnit: number;
     framingPerM: number;
+    selectedHardware: Record<string, number>;
+    selectedServices: Record<string, boolean>;
+    selectedCustom: Record<string, number>;
   };
   const [items, setItems] = useState<OrderItem[]>([]);
   const [clientName, setClientName] = useState("");
@@ -269,7 +277,13 @@ export default function Index() {
       unitPrice,
       mountPricePerUnit: PRICES.mount_per_unit,
       framingPerM: PRICES.framing_per_m,
+      selectedHardware: { ...selectedHardware },
+      selectedServices: { ...selectedServices },
+      selectedCustom: { ...selectedCustom },
     }]);
+    setSelectedHardware({});
+    setSelectedServices({});
+    setSelectedCustom({});
   }
 
   const inputCls = "w-full border border-[#d0dde8] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a6baa]/30 bg-white";
@@ -492,6 +506,78 @@ export default function Index() {
             </div>
           </div>
 
+          {/* доп. позиции */}
+          {(EXTRA.hardware.length > 0 || EXTRA.services.length > 0 || EXTRA.custom.length > 0) && (
+            <div className="mt-6 pt-5 border-t border-[#d0dde8] space-y-4">
+              {EXTRA.hardware.length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold text-gray-700 mb-2">Фурнитура</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {EXTRA.hardware.map(h => (
+                      <div key={h.id} className="flex items-center gap-2">
+                        <input type="checkbox" id={"hw-" + h.id}
+                          checked={(selectedHardware[h.id] ?? 0) > 0}
+                          onChange={(e) => setSelectedHardware(prev => ({ ...prev, [h.id]: e.target.checked ? 1 : 0 }))}
+                          className="w-4 h-4 accent-[#1a6baa] shrink-0" />
+                        <label htmlFor={"hw-" + h.id} className="text-sm text-gray-600 flex-1">{h.label} <span className="text-gray-400">— {h.price} ₽/{h.unit}</span></label>
+                        {(selectedHardware[h.id] ?? 0) > 0 && (
+                          <div className="flex items-center border border-[#d0dde8] rounded-lg overflow-hidden bg-white shrink-0">
+                            <button type="button" onClick={() => setSelectedHardware(prev => ({ ...prev, [h.id]: Math.max(1, (prev[h.id] ?? 1) - 1) }))}
+                              className="px-2 py-1 text-sm font-bold text-gray-500 hover:bg-gray-100">−</button>
+                            <span className="px-2 text-sm">{selectedHardware[h.id]}</span>
+                            <button type="button" onClick={() => setSelectedHardware(prev => ({ ...prev, [h.id]: (prev[h.id] ?? 1) + 1 }))}
+                              className="px-2 py-1 text-sm font-bold text-gray-500 hover:bg-gray-100">+</button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {EXTRA.services.length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold text-gray-700 mb-2">Доп. услуги</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {EXTRA.services.map(s => (
+                      <label key={s.id} className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox"
+                          checked={selectedServices[s.id] ?? false}
+                          onChange={(e) => setSelectedServices(prev => ({ ...prev, [s.id]: e.target.checked }))}
+                          className="w-4 h-4 accent-[#1a6baa] shrink-0" />
+                        <span className="text-sm text-gray-600">{s.label} <span className="text-gray-400">— {s.price}{s.isPercent ? "%" : " ₽"}</span></span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {EXTRA.custom.length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold text-gray-700 mb-2">Дополнительно</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {EXTRA.custom.map(c => (
+                      <div key={c.id} className="flex items-center gap-2">
+                        <input type="checkbox" id={"cx-" + c.id}
+                          checked={(selectedCustom[c.id] ?? 0) > 0}
+                          onChange={(e) => setSelectedCustom(prev => ({ ...prev, [c.id]: e.target.checked ? 1 : 0 }))}
+                          className="w-4 h-4 accent-[#1a6baa] shrink-0" />
+                        <label htmlFor={"cx-" + c.id} className="text-sm text-gray-600 flex-1">{c.label} <span className="text-gray-400">— {c.price} ₽/{c.unit}</span></label>
+                        {(selectedCustom[c.id] ?? 0) > 0 && (
+                          <div className="flex items-center border border-[#d0dde8] rounded-lg overflow-hidden bg-white shrink-0">
+                            <button type="button" onClick={() => setSelectedCustom(prev => ({ ...prev, [c.id]: Math.max(1, (prev[c.id] ?? 1) - 1) }))}
+                              className="px-2 py-1 text-sm font-bold text-gray-500 hover:bg-gray-100">−</button>
+                            <span className="px-2 text-sm">{selectedCustom[c.id]}</span>
+                            <button type="button" onClick={() => setSelectedCustom(prev => ({ ...prev, [c.id]: (prev[c.id] ?? 1) + 1 }))}
+                              className="px-2 py-1 text-sm font-bold text-gray-500 hover:bg-gray-100">+</button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* кнопка */}
           <div className="mt-5 flex justify-center">
             <button onClick={() => { handleAdd(); document.getElementById("params-block")?.scrollIntoView({ behavior: "smooth" }); }}
@@ -545,6 +631,21 @@ export default function Index() {
             ...(item.zipperLeft ? [{ label: "Молния слева", detail: "Молния спиральная", unitInfo: `${PRICES.zipper} руб./шт. * 1 шт.`, total: PRICES.zipper }] : []),
             ...(item.zipperRight ? [{ label: "Молния справа", detail: "Молния спиральная", unitInfo: `${PRICES.zipper} руб./шт. * 1 шт.`, total: PRICES.zipper }] : []),
             ...(item.mounting ? [{ label: "Монтаж", detail: "Выезд и установка", unitInfo: `${PRICES.mounting} руб.`, total: PRICES.mounting }] : []),
+            ...EXTRA.hardware.filter(h => (item.selectedHardware[h.id] ?? 0) > 0).map(h => ({
+              label: h.label, detail: "Фурнитура",
+              unitInfo: `${h.price} ₽ × ${item.selectedHardware[h.id]} ${h.unit}`,
+              total: h.price * item.selectedHardware[h.id],
+            })),
+            ...EXTRA.services.filter(s => item.selectedServices[s.id]).map(s => {
+              const base = rows.reduce((sum, r) => sum + r.total, 0);
+              const t = s.isPercent ? Math.round(base * s.price / 100) : s.price;
+              return { label: s.label, detail: "Услуга", unitInfo: s.isPercent ? `${s.price}% от суммы` : `${s.price} ₽`, total: t };
+            }),
+            ...EXTRA.custom.filter(c => (item.selectedCustom[c.id] ?? 0) > 0).map(c => ({
+              label: c.label, detail: "Доп. позиция",
+              unitInfo: `${c.price} ₽ × ${item.selectedCustom[c.id]} ${c.unit}`,
+              total: c.price * item.selectedCustom[c.id],
+            })),
           ];
 
           const rowsTotal = rows.reduce((s, r) => s + r.total, 0);

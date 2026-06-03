@@ -1,6 +1,33 @@
 // ─── дефолтные цены ───────────────────────────────────────────
 export type FilmOption = { label: string; price: number; rollWidth: number; productWidth: number };
 
+// Фурнитура: цена за штуку
+export type HardwareItem = { id: string; label: string; price: number; unit: string };
+// Доп. услуги: фиксированная цена или %
+export type ServiceItem = { id: string; label: string; price: number; isPercent: boolean };
+// Произвольные позиции
+export type CustomItem = { id: string; label: string; price: number; unit: string };
+
+export type ExtraLists = {
+  hardware: HardwareItem[];
+  services: ServiceItem[];
+  custom: CustomItem[];
+};
+
+export const DEFAULT_EXTRA_LISTS: ExtraLists = {
+  hardware: [
+    { id: "hw1", label: "Петля навесная", price: 45, unit: "шт." },
+    { id: "hw2", label: "Болт М8×30", price: 12, unit: "шт." },
+    { id: "hw3", label: "Крючок крепёжный", price: 25, unit: "шт." },
+  ],
+  services: [
+    { id: "sv1", label: "Выезд на замер", price: 500, isPercent: false },
+    { id: "sv2", label: "Срочное изготовление", price: 20, isPercent: true },
+    { id: "sv3", label: "Упаковка", price: 150, isPercent: false },
+  ],
+  custom: [],
+};
+
 export type PricesConfig = {
   strap: number;
   zipper: number;
@@ -79,7 +106,22 @@ export function saveFilmOptions(f: FilmOptionsConfig) {
   localStorage.setItem(FILMS_KEY, JSON.stringify(f));
 }
 
+const EXTRA_KEY = "curtain_extra";
+
+export function loadExtraLists(): ExtraLists {
+  try {
+    const raw = localStorage.getItem(EXTRA_KEY);
+    if (raw) return { ...DEFAULT_EXTRA_LISTS, ...JSON.parse(raw) };
+  } catch (e) { console.warn(e); }
+  return JSON.parse(JSON.stringify(DEFAULT_EXTRA_LISTS));
+}
+
+export function saveExtraLists(e: ExtraLists) {
+  localStorage.setItem(EXTRA_KEY, JSON.stringify(e));
+}
+
 export function resetAll() {
   localStorage.removeItem(PRICES_KEY);
   localStorage.removeItem(FILMS_KEY);
+  localStorage.removeItem(EXTRA_KEY);
 }
