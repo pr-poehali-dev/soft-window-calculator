@@ -9,7 +9,7 @@ type CurtainType = { id: string; label: string; filmColor: string; frameColor: s
 const CURTAIN_TYPES: CurtainType[] = [
   { id: "transparent", label: "Прозрачная", filmColor: "#b8e4f0", frameColor: "#6b3a2a" },
   { id: "combined", label: "Комбинированная", filmColor: "#d4c4a0", frameColor: "#6b3a2a" },
-  { id: "solid", label: "Однотонная", filmColor: "#8b7355", frameColor: "#8b7355", noFrame: true },
+  { id: "solid", label: "Однотонная", filmColor: "#7a5340", frameColor: "#7a5340", noFrame: true },
   { id: "mosquito", label: "Москитная", filmColor: "#c8c8c8", frameColor: "#6b3a2a", mesh: true },
 ];
 
