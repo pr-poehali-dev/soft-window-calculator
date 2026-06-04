@@ -461,7 +461,7 @@ export default function Index() {
               {/* доп. параметры */}
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2.5">
-                  <span className="text-xs font-medium text-gray-600">Ремешок</span>
+                  <span className="text-xs font-medium text-gray-600"> Ремешок для скручивания</span>
                   <Toggle value={strap} onChange={setStrap} />
                 </div>
                 <div className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2.5">
