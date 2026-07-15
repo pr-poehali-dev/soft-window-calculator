@@ -121,7 +121,7 @@ function WindowPreview({
           </div>
           {/* пленка */}
           <div
-            className="relative overflow-hidden rounded-0"
+            className="relative rounded-sm overflow-hidden"
             style={{
               width: type.noFrame ? pw : pw,
               height: type.noFrame ? ph : ph,
