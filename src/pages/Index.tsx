@@ -281,7 +281,34 @@ export default function Index() {
   }, [width, height, film, strap, zipperLeft, zipperRight, mounting, discount, wp]);
 
   const deliveryCost = deliveryKm > 0 ? (wp.delivery_base ?? 500) + deliveryKm * (wp.delivery_km ?? 35) : 0;
-  const totalItems = items.reduce((s, i) => s + i.unitPrice * i.qty, 0);
+
+  function calcItemTotal(item: OrderItem) {
+    const area = (item.width / 1000) * (item.height / 1000);
+    const filmCost = Math.round(item.film.price * area);
+    const perimeter = 2 * (item.width + item.height) / 1000;
+
+    const mountSides = [
+      { id: item.mountTop, countH: Math.max(2, Math.round(item.width / (item.mountTopStep * 10))) },
+      { id: item.mountBottom, countH: Math.max(2, Math.round(item.width / (item.mountBottomStep * 10))) },
+      { id: item.mountLeft, countH: Math.max(2, Math.round(item.height / (item.mountLeftStep * 10))) },
+      { id: item.mountRight, countH: Math.max(2, Math.round(item.height / (item.mountRightStep * 10))) },
+    ].filter(s => s.id !== "--");
+
+    let total = filmCost;
+    if (!item.curtainType.noFrame) total += Math.round(item.framingPerM * perimeter);
+    mountSides.forEach(s => { total += item.mountPricePerUnit * s.countH; });
+    if (item.strap) total += item.strapPrice;
+    if (item.zipperLeft) total += item.zipperPrice;
+    if (item.zipperRight) total += item.zipperPrice;
+    if (item.mounting) total += item.mountingPrice;
+    EXTRA.hardware.forEach(h => { const q = item.selectedHardware[h.id] ?? 0; if (q > 0) total += h.price * q; });
+    EXTRA.custom.forEach(c => { const q = item.selectedCustom[c.id] ?? 0; if (q > 0) total += c.price * q; });
+    EXTRA.services.forEach(s => { if (item.selectedServices[s.id]) total += s.isPercent ? Math.round(total * s.price / 100) : s.price; });
+
+    return Math.round(total * (1 - item.discount / 100));
+  }
+
+  const totalItems = items.reduce((s, i) => s + calcItemTotal(i) * i.qty, 0);
   const grandTotal = totalItems + deliveryCost;
 
   function handleSubmit() {
