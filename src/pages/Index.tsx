@@ -414,6 +414,7 @@ export default function Index() {
                       className="rounded-sm"
                       style={{
                         width: t.previewScale?.w ?? "85%", height: t.previewScale?.h ?? "85%",
+                        marginBottom: t.previewScale ? "25%" : undefined,
                         backgroundColor: t.filmColor,
                         backgroundImage: t.mesh
                           ? "repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.2) 3px,rgba(0,0,0,.2) 4px),repeating-linear-gradient(90deg,transparent,transparent 3px,rgba(0,0,0,.2) 3px,rgba(0,0,0,.2) 4px)"
