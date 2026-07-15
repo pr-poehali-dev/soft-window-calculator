@@ -382,14 +382,14 @@ export default function Index() {
                 }`}
               >
                 <div
-                  className="w-full rounded flex items-center justify-center"
-                  style={{ height: 52, backgroundColor: t.noFrame ? t.filmColor : (FRAME_COLORS.find(c => c.id === frameColor)?.hex ?? t.frameColor) }}
+                  className="w-full aspect-square rounded flex items-center justify-center"
+                  style={{ backgroundColor: t.noFrame ? t.filmColor : (FRAME_COLORS.find(c => c.id === frameColor)?.hex ?? t.frameColor) }}
                 >
                   {!t.noFrame && (
                     <div
                       className="rounded-sm"
                       style={{
-                        width: "65%", height: 34,
+                        width: "65%", height: "65%",
                         backgroundColor: t.filmColor,
                         backgroundImage: t.mesh
                           ? "repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.2) 3px,rgba(0,0,0,.2) 4px),repeating-linear-gradient(90deg,transparent,transparent 3px,rgba(0,0,0,.2) 3px,rgba(0,0,0,.2) 4px)"
