@@ -389,7 +389,7 @@ export default function Index() {
                     <div
                       className="rounded-sm"
                       style={{
-                        width: "65%", height: "65%",
+                        width: "85%", height: "85%",
                         backgroundColor: t.filmColor,
                         backgroundImage: t.mesh
                           ? "repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.2) 3px,rgba(0,0,0,.2) 4px),repeating-linear-gradient(90deg,transparent,transparent 3px,rgba(0,0,0,.2) 3px,rgba(0,0,0,.2) 4px)"
