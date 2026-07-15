@@ -411,7 +411,7 @@ export default function Index() {
                 >
                   {!t.noFrame && (
                     <div
-                      className="rounded-sm"
+                      className="rounded-sm my-0 py-0 px-[90px]"
                       style={{
                         width: t.previewScale?.w ?? "85%", height: t.previewScale?.h ?? "85%",
                         backgroundColor: t.filmColor,
