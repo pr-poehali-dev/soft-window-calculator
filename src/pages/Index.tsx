@@ -8,7 +8,7 @@ type CurtainType = { id: string; label: string; filmColor: string; frameColor: s
 
 const CURTAIN_TYPES: CurtainType[] = [
   { id: "transparent", label: "Прозрачная", filmColor: "#b8e4f0", frameColor: "#6b3a2a" },
-  { id: "combined", label: "Комбинированная", filmColor: "#d4c4a0", frameColor: "#6b3a2a" },
+  { id: "combined", label: "Комбинированная", filmColor: "#aadce8", frameColor: "#6b3a2a" },
   { id: "solid", label: "Однотонная", filmColor: "#7a5340", frameColor: "#7a5340", noFrame: true },
   { id: "mosquito", label: "Москитная", filmColor: "#c8c8c8", frameColor: "#6b3a2a", mesh: true },
 ];
@@ -76,12 +76,12 @@ function MountPreviewImg({ mountId }: { mountId: string }) {
 function WindowPreview({
   type, width, height,
   mountTop, mountBottom, mountLeft, mountRight,
-  zipperLeft, zipperRight, strap,
+  zipperLeft, zipperRight, zipperCenter, strap,
   frameColorHex,
 }: {
   type: CurtainType; width: number; height: number;
   mountTop: string; mountBottom: string; mountLeft: string; mountRight: string;
-  zipperLeft: boolean; zipperRight: boolean;
+  zipperLeft: boolean; zipperRight: boolean; zipperCenter: boolean;
   strap: boolean;
   frameColorHex?: string;
 }) {
@@ -159,6 +159,16 @@ function WindowPreview({
                 ))}
               </div>
             )}
+            {/* молния по центру (дверь) */}
+            {zipperCenter && (
+              <div className="absolute top-0 bottom-0 flex flex-col items-center" style={{ left: "50%", transform: "translateX(-50%)", width: 6 }}>
+                <div className="w-1 h-full bg-gray-500 opacity-70 rounded-full" />
+                {Array.from({ length: Math.max(3, Math.round(ph / 10)) }).map((_, i) => (
+                  <div key={i} className="absolute w-2.5 h-px bg-gray-600 opacity-60"
+                    style={{ top: 4 + i * (ph / Math.max(3, Math.round(ph / 10))), left: "50%", transform: "translateX(-50%)" }} />
+                ))}
+              </div>
+            )}
             {/* ремешки подвязочные — вертикальные полосы по плёнке */}
             {strap && (
               <>
@@ -223,6 +233,7 @@ export default function Index() {
   const [strap, setStrap] = useState(false);
   const [zipperLeft, setZipperLeft] = useState(false);
   const [zipperRight, setZipperRight] = useState(false);
+  const [zipperCenter, setZipperCenter] = useState(false);
   const [mounting, setMounting] = useState(false);
   const [discount, setDiscount] = useState(0);
   const [mountTop, setMountTop] = useState("--");
@@ -245,7 +256,7 @@ export default function Index() {
     width: number; height: number; qty: number;
     film: { label: string; price: number; rollWidth: number; productWidth: number };
     frameColor: string;
-    strap: boolean; zipperLeft: boolean; zipperRight: boolean; mounting: boolean;
+    strap: boolean; zipperLeft: boolean; zipperRight: boolean; zipperCenter: boolean; mounting: boolean;
     discount: number;
     mountTop: string; mountBottom: string; mountLeft: string; mountRight: string;
     mountTopStep: number; mountBottomStep: number; mountLeftStep: number; mountRightStep: number;
@@ -275,10 +286,11 @@ export default function Index() {
     if (strap) price += wp.strap ?? 180;
     if (zipperLeft) price += wp.zipper ?? 350;
     if (zipperRight) price += wp.zipper ?? 350;
+    if (zipperCenter) price += wp.zipper ?? 350;
     if (mounting) price += wp.mounting ?? 290;
     price = price * (1 - discount / 100);
     return Math.round(price);
-  }, [width, height, film, strap, zipperLeft, zipperRight, mounting, discount, wp]);
+  }, [width, height, film, strap, zipperLeft, zipperRight, zipperCenter, mounting, discount, wp]);
 
   const deliveryCost = deliveryKm > 0 ? (wp.delivery_base ?? 500) + deliveryKm * (wp.delivery_km ?? 35) : 0;
 
@@ -300,6 +312,7 @@ export default function Index() {
     if (item.strap) total += item.strapPrice;
     if (item.zipperLeft) total += item.zipperPrice;
     if (item.zipperRight) total += item.zipperPrice;
+    if (item.zipperCenter) total += item.zipperPrice;
     if (item.mounting) total += item.mountingPrice;
     EXTRA.hardware.forEach(h => { const q = item.selectedHardware[h.id] ?? 0; if (q > 0) total += h.price * q; });
     EXTRA.custom.forEach(c => { const q = item.selectedCustom[c.id] ?? 0; if (q > 0) total += c.price * q; });
@@ -323,7 +336,7 @@ export default function Index() {
       width, height, qty,
       film,
       frameColor,
-      strap, zipperLeft, zipperRight, mounting,
+      strap, zipperLeft, zipperRight, zipperCenter, mounting,
       discount,
       mountTop, mountBottom, mountLeft, mountRight,
       mountTopStep, mountBottomStep, mountLeftStep, mountRightStep,
@@ -387,7 +400,7 @@ export default function Index() {
                 >
                   {!t.noFrame && (
                     <div
-                      className="rounded-sm"
+                      className={`rounded-sm ${t.id === "combined" ? "border border-[#9db8c4]" : ""}`}
                       style={{
                         width: "85%", height: "85%",
                         backgroundColor: t.filmColor,
@@ -417,7 +430,7 @@ export default function Index() {
                 type={selectedType} width={width} height={height}
                 mountTop={mountTop} mountBottom={mountBottom}
                 mountLeft={mountLeft} mountRight={mountRight}
-                zipperLeft={zipperLeft} zipperRight={zipperRight}
+                zipperLeft={zipperLeft} zipperRight={zipperRight} zipperCenter={zipperCenter}
                 strap={strap}
                 frameColorHex={FRAME_COLORS.find(c => c.id === frameColor)?.hex}
               />
@@ -522,6 +535,7 @@ export default function Index() {
                   {[
                     { label: "Слева", val: zipperLeft, set: setZipperLeft },
                     { label: "Справа", val: zipperRight, set: setZipperRight },
+                    { label: "Дверь (центр)", val: zipperCenter, set: setZipperCenter },
                   ].map(({ label, val, set }) => (
                     <label key={label} className="flex items-center gap-2 cursor-pointer">
                       <input type="checkbox" checked={val} onChange={(e) => set(e.target.checked)}
@@ -643,6 +657,7 @@ export default function Index() {
             ...(item.strap ? [{ label: "Ремешок подвязочный", detail: "2 шт.", unitInfo: `${item.strapPrice} руб.`, total: item.strapPrice }] : []),
             ...(item.zipperLeft ? [{ label: "Молния слева", detail: "Молния спиральная", unitInfo: `${item.zipperPrice} руб./шт. * 1 шт.`, total: item.zipperPrice }] : []),
             ...(item.zipperRight ? [{ label: "Молния справа", detail: "Молния спиральная", unitInfo: `${item.zipperPrice} руб./шт. * 1 шт.`, total: item.zipperPrice }] : []),
+            ...(item.zipperCenter ? [{ label: "Молния (дверь)", detail: "Молния спиральная по центру", unitInfo: `${item.zipperPrice} руб./шт. * 1 шт.`, total: item.zipperPrice }] : []),
             ...(item.mounting ? [{ label: "Монтаж", detail: "Выезд и установка", unitInfo: `${item.mountingPrice} руб.`, total: item.mountingPrice }] : []),
             ...EXTRA.hardware.filter(h => (item.selectedHardware[h.id] ?? 0) > 0).map(h => ({
               label: h.label, detail: "Фурнитура",
@@ -686,7 +701,7 @@ export default function Index() {
                     width={item.width} height={item.height}
                     mountTop={item.mountTop} mountBottom={item.mountBottom}
                     mountLeft={item.mountLeft} mountRight={item.mountRight}
-                    zipperLeft={item.zipperLeft} zipperRight={item.zipperRight}
+                    zipperLeft={item.zipperLeft} zipperRight={item.zipperRight} zipperCenter={item.zipperCenter}
                     strap={item.strap}
                     frameColorHex={FRAME_COLORS.find(c => c.id === item.frameColor)?.hex}
                   />
