@@ -23,11 +23,13 @@ const FRAME_COLORS = [
 
 const MOUNT_OPTIONS = [
   { id: "--", label: "--" },
-  { id: "skoba_lyuvers", label: "Скоба+люверс с рем." },
-  { id: "round_lyuvers", label: "Круглые люверсы" },
-  { id: "skoba_large", label: "Скоба большая поворотная" },
-  { id: "skoba_small", label: "Скоба малая поворотная" },
+  { id: "round_lyuvers", label: "Люверсы", desc: "Металлические кольца-люверсы, вшитые в верхний край полотна" },
+  { id: "skoba_lyuvers", label: "Скоба+люверс с рем.", desc: "Скоба с ремешком и люверсом для надёжной фиксации" },
+  { id: "skoba_large", label: "Скоба большая поворотная", desc: "Крупная поворотная скоба для тяжёлых полотен" },
+  { id: "skoba_small", label: "Скоба малая поворотная", desc: "Компактная поворотная скоба для лёгких штор" },
 ];
+
+const MOUNT_STEPS = [20, 30, 40];
 
 // ─── крепёж на рамке ──────────────────────────────────────────
 function Fastener({ mountId }: { mountId: string }) {
@@ -56,6 +58,16 @@ function MountRow({ count, mountId, direction }: { count: number; mountId: strin
   return (
     <div className={`flex ${direction === "h" ? "flex-row" : "flex-col"} items-center justify-around w-full h-full`}>
       {Array.from({ length: count }).map((_, i) => <Fastener key={i} mountId={mountId} />)}
+    </div>
+  );
+}
+
+// ─── превью-картинка для типа крепления в блоке выбора ──────────
+function MountPreviewImg({ mountId }: { mountId: string }) {
+  if (mountId === "--") return null;
+  return (
+    <div className="w-full h-16 rounded-lg overflow-hidden bg-[#7a5340] flex items-center justify-around px-2">
+      {Array.from({ length: 5 }).map((_, i) => <Fastener key={i} mountId={mountId} />)}
     </div>
   );
 }
@@ -217,6 +229,10 @@ export default function Index() {
   const [mountBottom, setMountBottom] = useState("--");
   const [mountLeft, setMountLeft] = useState("--");
   const [mountRight, setMountRight] = useState("--");
+  const [mountTopStep, setMountTopStep] = useState(30);
+  const [mountBottomStep, setMountBottomStep] = useState(30);
+  const [mountLeftStep, setMountLeftStep] = useState(30);
+  const [mountRightStep, setMountRightStep] = useState(30);
   const [deliveryKm, setDeliveryKm] = useState(0);
   // выбранные доп. позиции (id → кол-во)
   const [selectedHardware, setSelectedHardware] = useState<Record<string, number>>({});
@@ -232,6 +248,7 @@ export default function Index() {
     strap: boolean; zipperLeft: boolean; zipperRight: boolean; mounting: boolean;
     discount: number;
     mountTop: string; mountBottom: string; mountLeft: string; mountRight: string;
+    mountTopStep: number; mountBottomStep: number; mountLeftStep: number; mountRightStep: number;
     unitPrice: number;
     mountPricePerUnit: number;
     framingPerM: number;
@@ -282,6 +299,7 @@ export default function Index() {
       strap, zipperLeft, zipperRight, mounting,
       discount,
       mountTop, mountBottom, mountLeft, mountRight,
+      mountTopStep, mountBottomStep, mountLeftStep, mountRightStep,
       unitPrice,
       mountPricePerUnit: wp.mount_unit ?? 120,
       framingPerM: wp.framing ?? 80,
@@ -497,23 +515,50 @@ export default function Index() {
 
           {/* тип крепления */}
           <div className="mt-6 pt-5 border-t border-[#d0dde8]">
-            <p className="text-sm font-semibold text-gray-700 text-center">Тип крепления шторы:</p>
-            <p className="text-xs text-gray-400 text-center mb-4">(рекомендуемые значения уже выбраны)</p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <p className="text-sm font-semibold text-gray-700 text-center">Тип крепления шторы</p>
+            <p className="text-xs text-gray-400 text-center mb-4">Выберите тип крепления по каждой стороне — цена рассчитывается автоматически по интервалу</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
-                { label: "Верх", value: mountTop, set: setMountTop },
-                { label: "Низ", value: mountBottom, set: setMountBottom },
-                { label: "Слева", value: mountLeft, set: setMountLeft },
-                { label: "Справа", value: mountRight, set: setMountRight },
-              ].map(({ label, value, set }) => (
-                <div key={label}>
-                  <label className="block text-xs text-gray-500 text-center mb-1">{label}</label>
-                  <select value={value} onChange={(e) => set(e.target.value)}
-                    className="w-full border border-[#d0dde8] rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#1a6baa]/30 bg-white">
-                    {MOUNT_OPTIONS.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
-                  </select>
-                </div>
-              ))}
+                { label: "Верх", value: mountTop, set: setMountTop, step: mountTopStep, setStep: setMountTopStep },
+                { label: "Низ", value: mountBottom, set: setMountBottom, step: mountBottomStep, setStep: setMountBottomStep },
+                { label: "Слева", value: mountLeft, set: setMountLeft, step: mountLeftStep, setStep: setMountLeftStep },
+                { label: "Справа", value: mountRight, set: setMountRight, step: mountRightStep, setStep: setMountRightStep },
+              ].map(({ label, value, set, step, setStep }) => {
+                const opt = MOUNT_OPTIONS.find(o => o.id === value);
+                return (
+                  <div key={label} className="space-y-2">
+                    <label className="block text-xs font-semibold text-gray-500 text-center">{label}</label>
+                    <select value={value} onChange={(e) => set(e.target.value)}
+                      className="w-full border border-[#d0dde8] rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#1a6baa]/30 bg-white">
+                      {MOUNT_OPTIONS.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+                    </select>
+
+                    {value !== "--" && (
+                      <>
+                        <MountPreviewImg mountId={value} />
+                        {opt?.desc && (
+                          <p className="text-[11px] text-gray-400 text-center leading-snug">{opt.desc}</p>
+                        )}
+                        <div>
+                          <p className="text-[11px] text-gray-400 text-center mb-1">Интервал (шаг)</p>
+                          <div className="flex gap-1">
+                            {MOUNT_STEPS.map((s) => (
+                              <button key={s} type="button" onClick={() => setStep(s)}
+                                className={`flex-1 text-[11px] py-1.5 rounded-md border font-medium transition-colors ${
+                                  step === s
+                                    ? "bg-[#1a6baa] border-[#1a6baa] text-white"
+                                    : "border-[#d0dde8] text-gray-600 hover:border-[#1a6baa]/40"
+                                }`}>
+                                {s} см
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -536,10 +581,10 @@ export default function Index() {
           const filmCost = Math.round(item.film.price * area);
 
           const mountSides = [
-            { label: "Крепление сверху", id: item.mountTop, countH: Math.max(2, Math.min(6, Math.round(item.width / 200))) },
-            { label: "Крепление снизу", id: item.mountBottom, countH: Math.max(2, Math.min(6, Math.round(item.width / 200))) },
-            { label: "Крепление слева", id: item.mountLeft, countH: Math.max(2, Math.min(5, Math.round(item.height / 200))) },
-            { label: "Крепление справа", id: item.mountRight, countH: Math.max(2, Math.min(5, Math.round(item.height / 200))) },
+            { label: "Крепление сверху", id: item.mountTop, countH: Math.max(2, Math.round(item.width / (item.mountTopStep * 10))) },
+            { label: "Крепление снизу", id: item.mountBottom, countH: Math.max(2, Math.round(item.width / (item.mountBottomStep * 10))) },
+            { label: "Крепление слева", id: item.mountLeft, countH: Math.max(2, Math.round(item.height / (item.mountLeftStep * 10))) },
+            { label: "Крепление справа", id: item.mountRight, countH: Math.max(2, Math.round(item.height / (item.mountRightStep * 10))) },
           ].filter(s => s.id !== "--");
 
           const MOUNT_PRICE = item.mountPricePerUnit;
