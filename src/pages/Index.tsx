@@ -1,14 +1,14 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import Icon from "@/components/ui/icon";
-import { loadFilmOptions, loadExtraLists, loadWorks } from "@/lib/prices";
+import { loadFilmOptions, loadExtraLists, loadWorks, loadMountOptions } from "@/lib/prices";
 
 // ─── данные ───────────────────────────────────────────────────
 type CurtainType = { id: string; label: string; filmColor: string; frameColor: string; mesh?: boolean; noFrame?: boolean; previewScale?: { w: string; h: string } };
 
 const CURTAIN_TYPES: CurtainType[] = [
   { id: "transparent", label: "Прозрачная", filmColor: "#b8e4f0", frameColor: "#6b3a2a" },
-  { id: "combined", label: "Комбинированная", filmColor: "#aadce8", frameColor: "#6b3a2a", previewScale: { w: "55%", h: "40%" } },
+  { id: "combined", label: "Комбинированная", filmColor: "#aadce8", frameColor: "#6b3a2a", previewScale: { w: "75%", h: "40%" } },
   { id: "solid", label: "Однотонная", filmColor: "#7a5340", frameColor: "#7a5340", noFrame: true },
   { id: "mosquito", label: "Москитная", filmColor: "#c8c8c8", frameColor: "#6b3a2a", mesh: true },
 ];
@@ -19,14 +19,6 @@ const FRAME_COLORS = [
   { id: "grey", label: "Серый", hex: "#7a7a7a" },
   { id: "beige", label: "Бежевый", hex: "#c8b89a" },
   { id: "green", label: "Зелёный", hex: "#3a6b3a" },
-];
-
-const MOUNT_OPTIONS = [
-  { id: "--", label: "--" },
-  { id: "round_lyuvers", label: "Люверсы", desc: "Металлические кольца-люверсы, вшитые в верхний край полотна" },
-  { id: "skoba_lyuvers", label: "Скоба+люверс с рем.", desc: "Скоба с ремешком и люверсом для надёжной фиксации" },
-  { id: "skoba_large", label: "Скоба большая поворотная", desc: "Крупная поворотная скоба для тяжёлых полотен" },
-  { id: "skoba_small", label: "Скоба малая поворотная", desc: "Компактная поворотная скоба для лёгких штор" },
 ];
 
 const MOUNT_STEPS = [20, 30, 40];
@@ -231,6 +223,7 @@ export default function Index() {
   }, [WORKS]);
   const FILM_OPTIONS = useMemo(() => loadFilmOptions(), []);
   const EXTRA = useMemo(() => loadExtraLists(), []);
+  const MOUNT_OPTIONS = useMemo(() => loadMountOptions(), []);
 
   const [curtainType, setCurtainType] = useState("transparent");
   const [filmIdx, setFilmIdx] = useState(0);
@@ -411,9 +404,10 @@ export default function Index() {
                 >
                   {!t.noFrame && (
                     <div
-                      className="rounded-sm my-0 py-0 px-[90px]"
+                      className="rounded-sm"
                       style={{
                         width: t.previewScale?.w ?? "85%", height: t.previewScale?.h ?? "85%",
+                        marginBottom: t.previewScale ? "25%" : undefined,
                         backgroundColor: t.filmColor,
                         backgroundImage: t.mesh
                           ? "repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.2) 3px,rgba(0,0,0,.2) 4px),repeating-linear-gradient(90deg,transparent,transparent 3px,rgba(0,0,0,.2) 3px,rgba(0,0,0,.2) 4px)"
