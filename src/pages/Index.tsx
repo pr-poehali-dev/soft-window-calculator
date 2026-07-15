@@ -581,10 +581,10 @@ export default function Index() {
           const filmCost = Math.round(item.film.price * area);
 
           const mountSides = [
-            { label: "Крепление сверху", id: item.mountTop, countH: Math.max(2, Math.round(item.width / (item.mountTopStep * 10))) },
-            { label: "Крепление снизу", id: item.mountBottom, countH: Math.max(2, Math.round(item.width / (item.mountBottomStep * 10))) },
-            { label: "Крепление слева", id: item.mountLeft, countH: Math.max(2, Math.round(item.height / (item.mountLeftStep * 10))) },
-            { label: "Крепление справа", id: item.mountRight, countH: Math.max(2, Math.round(item.height / (item.mountRightStep * 10))) },
+            { label: "Крепление сверху", id: item.mountTop, step: item.mountTopStep, countH: Math.max(2, Math.round(item.width / (item.mountTopStep * 10))) },
+            { label: "Крепление снизу", id: item.mountBottom, step: item.mountBottomStep, countH: Math.max(2, Math.round(item.width / (item.mountBottomStep * 10))) },
+            { label: "Крепление слева", id: item.mountLeft, step: item.mountLeftStep, countH: Math.max(2, Math.round(item.height / (item.mountLeftStep * 10))) },
+            { label: "Крепление справа", id: item.mountRight, step: item.mountRightStep, countH: Math.max(2, Math.round(item.height / (item.mountRightStep * 10))) },
           ].filter(s => s.id !== "--");
 
           const MOUNT_PRICE = item.mountPricePerUnit;
@@ -608,7 +608,7 @@ export default function Index() {
               const mo = MOUNT_OPTIONS.find(o => o.id === s.id);
               return {
                 label: s.label,
-                detail: mo?.label ?? s.id,
+                detail: `${mo?.label ?? s.id} — шаг ${s.step} см`,
                 unitInfo: `${MOUNT_PRICE} руб./шт. * ${s.countH} шт.`,
                 total: MOUNT_PRICE * s.countH,
               };
