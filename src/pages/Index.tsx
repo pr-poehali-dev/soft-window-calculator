@@ -404,7 +404,7 @@ export default function Index() {
                 >
                   {!t.noFrame && (
                     <div
-                      className="px-[95px] my-1 mx-[1px] rounded-0"
+                      className="my-1 mx-[1px] rounded-0 px-[90px]"
                       style={{
                         width: t.previewScale?.w ?? "85%", height: t.previewScale?.h ?? "85%",
                         marginBottom: t.previewScale ? "25%" : undefined,
