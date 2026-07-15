@@ -383,7 +383,7 @@ export default function Index() {
               >
                 <div
                   className="w-full aspect-square rounded flex items-center justify-center"
-                  style={{ backgroundColor: t.noFrame ? t.filmColor : (FRAME_COLORS.find(c => c.id === frameColor)?.hex ?? t.frameColor) }}
+                  style={{ backgroundColor: t.noFrame ? t.filmColor : (curtainType === t.id ? (FRAME_COLORS.find(c => c.id === frameColor)?.hex ?? t.frameColor) : t.frameColor) }}
                 >
                   {!t.noFrame && (
                     <div
