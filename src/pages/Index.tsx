@@ -404,7 +404,7 @@ export default function Index() {
                 >
                   {!t.noFrame && (
                     <div
-                      className="rounded-sm"
+                      className="rounded-sm px-[90px]"
                       style={{
                         width: t.previewScale?.w ?? "85%", height: t.previewScale?.h ?? "85%",
                         marginBottom: t.previewScale ? "25%" : undefined,
