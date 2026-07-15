@@ -4,10 +4,9 @@ import Icon from "@/components/ui/icon";
 import {
   loadPrices, savePrices, loadFilmOptions, saveFilmOptions,
   loadExtraLists, saveExtraLists, loadWorks, saveWorks, resetAll,
-  loadMountOptions, saveMountOptions,
-  DEFAULT_PRICES, DEFAULT_FILM_OPTIONS, DEFAULT_EXTRA_LISTS, DEFAULT_WORKS, DEFAULT_MOUNT_OPTIONS,
+  DEFAULT_PRICES, DEFAULT_FILM_OPTIONS, DEFAULT_EXTRA_LISTS, DEFAULT_WORKS,
   type PricesConfig, type FilmOptionsConfig, type ExtraLists,
-  type HardwareItem, type ServiceItem, type CustomItem, type WorkItem, type MountOption,
+  type HardwareItem, type ServiceItem, type CustomItem, type WorkItem,
 } from "@/lib/prices";
 
 const CURTAIN_TYPE_LABELS: Record<string, string> = {
@@ -17,12 +16,11 @@ const CURTAIN_TYPE_LABELS: Record<string, string> = {
   mosquito: "Москитная",
 };
 
-type Tab = "works" | "films" | "hardware" | "services" | "custom" | "mounts";
+type Tab = "works" | "films" | "hardware" | "services" | "custom";
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: "works",    label: "Работы",    icon: "Wrench" },
   { id: "films",    label: "Плёнки",   icon: "Layers" },
-  { id: "mounts",   label: "Крепления",icon: "Anchor" },
   { id: "hardware", label: "Фурнитура",icon: "Package" },
   { id: "services", label: "Услуги",   icon: "Sparkles" },
   { id: "custom",   label: "Своё",     icon: "LayoutList" },
@@ -35,7 +33,6 @@ export default function Settings() {
   const [films, setFilms] = useState<FilmOptionsConfig>(() => loadFilmOptions());
   const [extra, setExtra] = useState<ExtraLists>(() => loadExtraLists());
   const [works, setWorks] = useState<WorkItem[]>(() => loadWorks());
-  const [mounts, setMounts] = useState<MountOption[]>(() => loadMountOptions());
   const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("works");
 
@@ -44,7 +41,6 @@ export default function Settings() {
     saveFilmOptions(films);
     saveExtraLists(extra);
     saveWorks(works);
-    saveMountOptions(mounts);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   }
@@ -56,7 +52,6 @@ export default function Settings() {
     setFilms(JSON.parse(JSON.stringify(DEFAULT_FILM_OPTIONS)));
     setExtra(JSON.parse(JSON.stringify(DEFAULT_EXTRA_LISTS)));
     setWorks(JSON.parse(JSON.stringify(DEFAULT_WORKS)));
-    setMounts(JSON.parse(JSON.stringify(DEFAULT_MOUNT_OPTIONS)));
   }
 
   // ─── работы ───
@@ -68,17 +63,6 @@ export default function Settings() {
   }
   function removeWork(id: string) {
     setWorks(prev => prev.filter(w => w.id !== id));
-  }
-
-  // ─── крепления ───
-  function addMount() {
-    setMounts(prev => [...prev, { id: newId(), label: "", desc: "" }]);
-  }
-  function updateMount(id: string, field: keyof MountOption, val: string) {
-    setMounts(prev => prev.map(m => m.id === id ? { ...m, [field]: val } : m));
-  }
-  function removeMount(id: string) {
-    setMounts(prev => prev.filter(m => m.id !== id));
   }
 
   // ─── плёнки ───
@@ -236,32 +220,6 @@ export default function Settings() {
             <button onClick={addFilmGroup}
               className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#1a6baa] font-semibold border border-dashed border-[#d0dde8] rounded-xl px-4 py-3 w-full justify-center hover:border-[#1a6baa] transition-colors">
               <Icon name="FolderPlus" size={15} /> Добавить новую группу
-            </button>
-          </div>
-        )}
-
-        {/* ── крепления ── */}
-        {activeTab === "mounts" && (
-          <div className="bg-white rounded-2xl border border-[#d0dde8] shadow-sm p-5 space-y-3">
-            <h2 className="text-sm font-bold text-gray-700">Типы крепления шторы</h2>
-            <p className="text-xs text-gray-400">Появляются в выпадающих списках "Верх/Низ/Слева/Справа" в калькуляторе. Первая строка "--" (без крепления) не удаляй.</p>
-            {mounts.map((m) => (
-              <div key={m.id} className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                <input value={m.label} placeholder="Название"
-                  onChange={(e) => updateMount(m.id, "label", e.target.value)}
-                  className={inputCls + " flex-1 min-w-0"} />
-                <input value={m.desc ?? ""} placeholder="Описание (необязательно)"
-                  onChange={(e) => updateMount(m.id, "desc", e.target.value)}
-                  className={inputCls + " flex-1 min-w-0"} />
-                <button onClick={() => removeMount(m.id)}
-                  className="text-gray-300 hover:text-red-400 transition-colors shrink-0">
-                  <Icon name="Trash2" size={16} />
-                </button>
-              </div>
-            ))}
-            <button onClick={addMount}
-              className="flex items-center gap-1.5 text-sm text-[#1a6baa] hover:text-[#155a92] font-semibold mt-1">
-              <Icon name="Plus" size={15} /> Добавить тип крепления
             </button>
           </div>
         )}

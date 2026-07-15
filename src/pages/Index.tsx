@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import Icon from "@/components/ui/icon";
-import { loadFilmOptions, loadExtraLists, loadWorks, loadMountOptions } from "@/lib/prices";
+import { loadFilmOptions, loadExtraLists, loadWorks } from "@/lib/prices";
 
 // ─── данные ───────────────────────────────────────────────────
 type CurtainType = { id: string; label: string; filmColor: string; frameColor: string; mesh?: boolean; noFrame?: boolean; previewScale?: { w: string; h: string } };
@@ -19,6 +19,14 @@ const FRAME_COLORS = [
   { id: "grey", label: "Серый", hex: "#7a7a7a" },
   { id: "beige", label: "Бежевый", hex: "#c8b89a" },
   { id: "green", label: "Зелёный", hex: "#3a6b3a" },
+];
+
+const MOUNT_OPTIONS = [
+  { id: "--", label: "--" },
+  { id: "round_lyuvers", label: "Люверсы", desc: "Металлические кольца-люверсы, вшитые в верхний край полотна" },
+  { id: "skoba_lyuvers", label: "Скоба+люверс с рем.", desc: "Скоба с ремешком и люверсом для надёжной фиксации" },
+  { id: "skoba_large", label: "Скоба большая поворотная", desc: "Крупная поворотная скоба для тяжёлых полотен" },
+  { id: "skoba_small", label: "Скоба малая поворотная", desc: "Компактная поворотная скоба для лёгких штор" },
 ];
 
 const MOUNT_STEPS = [20, 30, 40];
@@ -223,7 +231,6 @@ export default function Index() {
   }, [WORKS]);
   const FILM_OPTIONS = useMemo(() => loadFilmOptions(), []);
   const EXTRA = useMemo(() => loadExtraLists(), []);
-  const MOUNT_OPTIONS = useMemo(() => loadMountOptions(), []);
 
   const [curtainType, setCurtainType] = useState("transparent");
   const [filmIdx, setFilmIdx] = useState(0);
@@ -399,12 +406,12 @@ export default function Index() {
                 }`}
               >
                 <div
-                  className="w-full aspect-square rounded flex items-center justify-center px-[103px] py-[30px]"
+                  className="w-full aspect-square rounded flex items-center justify-center"
                   style={{ backgroundColor: t.noFrame ? t.filmColor : (curtainType === t.id ? (FRAME_COLORS.find(c => c.id === frameColor)?.hex ?? t.frameColor) : t.frameColor) }}
                 >
                   {!t.noFrame && (
                     <div
-                      className="px-[95px] my-1 mx-[1px] rounded-0"
+                      className="rounded-sm"
                       style={{
                         width: t.previewScale?.w ?? "85%", height: t.previewScale?.h ?? "85%",
                         marginBottom: t.previewScale ? "25%" : undefined,

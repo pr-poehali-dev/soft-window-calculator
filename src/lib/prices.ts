@@ -28,31 +28,6 @@ export function saveWorks(w: WorkItem[]) {
   localStorage.setItem(WORKS_KEY, JSON.stringify(w));
 }
 
-// Типы крепления шторы (люверсы, скобы и т.п.)
-export type MountOption = { id: string; label: string; desc?: string };
-
-export const DEFAULT_MOUNT_OPTIONS: MountOption[] = [
-  { id: "--", label: "--" },
-  { id: "round_lyuvers", label: "Люверсы", desc: "Металлические кольца-люверсы, вшитые в верхний край полотна" },
-  { id: "skoba_lyuvers", label: "Скоба+люверс с рем.", desc: "Скоба с ремешком и люверсом для надёжной фиксации" },
-  { id: "skoba_large", label: "Скоба большая поворотная", desc: "Крупная поворотная скоба для тяжёлых полотен" },
-  { id: "skoba_small", label: "Скоба малая поворотная", desc: "Компактная поворотная скоба для лёгких штор" },
-];
-
-const MOUNT_OPTIONS_KEY = "curtain_mount_options";
-
-export function loadMountOptions(): MountOption[] {
-  try {
-    const raw = localStorage.getItem(MOUNT_OPTIONS_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch (e) { console.warn(e); }
-  return JSON.parse(JSON.stringify(DEFAULT_MOUNT_OPTIONS));
-}
-
-export function saveMountOptions(m: MountOption[]) {
-  localStorage.setItem(MOUNT_OPTIONS_KEY, JSON.stringify(m));
-}
-
 // Фурнитура: цена за штуку
 export type HardwareItem = { id: string; label: string; price: number; unit: string };
 // Доп. услуги: фиксированная цена или %
@@ -177,5 +152,4 @@ export function resetAll() {
   localStorage.removeItem(FILMS_KEY);
   localStorage.removeItem(EXTRA_KEY);
   localStorage.removeItem(WORKS_KEY);
-  localStorage.removeItem(MOUNT_OPTIONS_KEY);
 }
