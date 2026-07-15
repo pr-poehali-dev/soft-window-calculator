@@ -399,12 +399,12 @@ export default function Index() {
                 }`}
               >
                 <div
-                  className="w-full aspect-square rounded flex items-center justify-center"
+                  className="w-full aspect-square rounded flex items-center justify-center px-[103px] py-[30px]"
                   style={{ backgroundColor: t.noFrame ? t.filmColor : (curtainType === t.id ? (FRAME_COLORS.find(c => c.id === frameColor)?.hex ?? t.frameColor) : t.frameColor) }}
                 >
                   {!t.noFrame && (
                     <div
-                      className="rounded-sm"
+                      className="px-[95px] my-1 mx-[1px] rounded-0"
                       style={{
                         width: t.previewScale?.w ?? "85%", height: t.previewScale?.h ?? "85%",
                         marginBottom: t.previewScale ? "25%" : undefined,
